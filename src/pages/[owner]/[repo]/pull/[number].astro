@@ -1,0 +1,21 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import App from '../../../../components/App';
+import { isDemo } from '../../../../lib/demo';
+
+const { owner = '', repo = '' } = Astro.params;
+const number = Number.parseInt(Astro.params.number ?? '', 10);
+
+if (!owner || !repo || !Number.isInteger(number) || number <= 0) {
+  return Astro.redirect('/?error=' + encodeURIComponent('That is not a valid pull request path.'));
+}
+
+const demo = isDemo(owner, repo, number);
+if (!demo && !Astro.locals.token) {
+  return Astro.redirect('/?next=' + encodeURIComponent(Astro.url.pathname));
+}
+---
+
+<Layout title={`${owner}/${repo}#${number} · PR Comment Inbox`}>
+  <App client:only="preact" owner={owner} repo={repo} number={number} demo={demo} />
+</Layout>

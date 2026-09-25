@@ -1,0 +1,5 @@
+# Optional: register a GitHub OAuth App (https://github.com/settings/developers)
+# with callback URL http://localhost:4321/api/auth/callback and fill these in.
+# Without them, the app still works with a personal access token pasted at sign-in.
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=

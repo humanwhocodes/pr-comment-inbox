@@ -1,0 +1,187 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --color-canvas: #ffffff;
+  --color-canvas-subtle: #f6f8fa;
+  --color-canvas-inset: #eff2f5;
+  --color-border: #d0d7de;
+  --color-border-muted: #e5e9ee;
+  --color-fg: #1f2328;
+  --color-fg-muted: #59636e;
+  --color-accent: #0969da;
+  --color-accent-fg: #ffffff;
+  --color-success: #1a7f37;
+  --color-success-bg: #dafbe1;
+  --color-danger: #cf222e;
+  --color-danger-bg: #ffebe9;
+  --color-attention: #9a6700;
+  --color-attention-bg: #fff8c5;
+  --color-done: #8250df;
+  --color-done-bg: #fbefff;
+  --color-diff-add: #dafbe1;
+  --color-diff-add-line: #aceebb;
+  --color-diff-del: #ffebe9;
+  --color-diff-del-line: #ffcecb;
+  --color-diff-hunk: #ddf4ff;
+}
+
+@layer base {
+  :root.dark {
+    --color-canvas: #0d1117;
+    --color-canvas-subtle: #151b23;
+    --color-canvas-inset: #010409;
+    --color-border: #3d444d;
+    --color-border-muted: #2a313a;
+    --color-fg: #f0f6fc;
+    --color-fg-muted: #9198a1;
+    --color-accent: #4493f8;
+    --color-accent-fg: #ffffff;
+    --color-success: #3fb950;
+    --color-success-bg: rgba(46, 160, 67, 0.15);
+    --color-danger: #f85149;
+    --color-danger-bg: rgba(248, 81, 73, 0.15);
+    --color-attention: #d29922;
+    --color-attention-bg: rgba(187, 128, 9, 0.15);
+    --color-done: #ab7df8;
+    --color-done-bg: rgba(163, 113, 247, 0.15);
+    --color-diff-add: rgba(46, 160, 67, 0.15);
+    --color-diff-add-line: rgba(46, 160, 67, 0.4);
+    --color-diff-del: rgba(248, 81, 73, 0.15);
+    --color-diff-del-line: rgba(248, 81, 73, 0.4);
+    --color-diff-hunk: rgba(56, 139, 253, 0.15);
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-border bg-canvas-subtle px-3 py-1.5 text-sm font-medium text-fg shadow-xs transition-colors hover:bg-canvas-inset disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-transparent bg-success text-white hover:bg-success/90;
+  }
+  .btn-sm {
+    @apply px-2 py-1 text-xs;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-fg-muted transition-colors hover:bg-canvas-inset;
+  }
+  .chip-active {
+    @apply border-accent/40 bg-accent/10 text-accent;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium leading-4;
+  }
+}
+
+/* GitHub-rendered comment bodies */
+.markdown-body {
+  @apply prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-pre:my-2 prose-pre:rounded-md prose-pre:bg-canvas-subtle prose-pre:text-fg prose-pre:border prose-pre:border-border prose-code:before:content-none prose-code:after:content-none prose-a:text-accent prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-blockquote:my-2 prose-blockquote:border-border prose-blockquote:text-fg-muted prose-img:my-2 prose-hr:my-4 prose-hr:border-border;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  word-wrap: break-word;
+}
+.markdown-body :where(code):not(pre code) {
+  @apply rounded bg-canvas-inset px-1.5 py-0.5 font-mono text-[0.85em] font-normal;
+}
+.markdown-body :where(pre) code {
+  @apply bg-transparent p-0 text-[0.85em];
+}
+.markdown-body :where(table) {
+  @apply my-2 text-sm;
+}
+.markdown-body :where(th, td) {
+  @apply border border-border px-2 py-1;
+}
+.markdown-body .user-mention,
+.markdown-body a.user-mention {
+  @apply font-semibold text-fg no-underline;
+}
+.markdown-body img.emoji {
+  @apply inline h-5 w-5 align-text-bottom my-0;
+}
+.markdown-body .task-list-item {
+  list-style: none;
+  margin-left: -1.25rem;
+}
+.markdown-body > :first-child { margin-top: 0; }
+.markdown-body > :last-child { margin-bottom: 0; }
+
+/* Diff hunk */
+.diff-line {
+  @apply grid font-mono text-[12.5px] leading-6;
+  grid-template-columns: 3.25rem 3.25rem 1.5rem 1fr;
+}
+.diff-line-num {
+  @apply select-none pr-2 text-right text-fg-muted/70;
+}
+.diff-line-marker {
+  @apply select-none text-center;
+}
+.diff-line-content {
+  @apply whitespace-pre pr-4;
+}
+.diff-add { background-color: var(--color-diff-add); }
+.diff-add .diff-line-num { background-color: var(--color-diff-add-line); color: var(--color-fg); }
+.diff-del { background-color: var(--color-diff-del); }
+.diff-del .diff-line-num { background-color: var(--color-diff-del-line); color: var(--color-fg); }
+.diff-hunk { background-color: var(--color-diff-hunk); }
+.diff-hunk .diff-line-num { background-color: var(--color-diff-hunk); }
+/* Suggested changes inside comment bodies */
+.markdown-body .suggestion {
+  @apply my-2 overflow-hidden rounded-md border border-border;
+}
+.markdown-body .suggestion-header {
+  @apply border-b border-border bg-canvas-subtle px-3 py-1.5 text-xs font-medium text-fg-muted;
+}
+.markdown-body .suggestion-body {
+  @apply overflow-x-auto;
+}
+.suggestion-line {
+  @apply grid font-mono text-[12.5px] leading-6;
+  grid-template-columns: max-content 1.5rem 1fr;
+}
+.suggestion-line .diff-line-num {
+  @apply min-w-[3.25rem] pl-2;
+}
+.suggestion-line .diff-line-marker { color: var(--color-fg-muted); }
+.suggestion-line.diff-add .diff-line-marker { color: var(--color-success); }
+.suggestion-line.diff-del .diff-line-marker { color: var(--color-danger); }
+.suggestion-line .x { @apply rounded-sm; }
+.suggestion-line.diff-add .x { background-color: var(--color-diff-add-line); }
+.suggestion-line.diff-del .x { background-color: var(--color-diff-del-line); }
+
+.diff-target {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+.scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 8px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
