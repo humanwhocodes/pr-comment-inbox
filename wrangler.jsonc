@@ -4,5 +4,7 @@
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Keep variables set in the Cloudflare dashboard (e.g. PLAUSIBLE_*) across deploys.
+  "keep_vars": true
 }
