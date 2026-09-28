@@ -46,6 +46,10 @@ Then open <http://localhost:4321>. There are two ways to sign in:
    `.dev.vars.example` to `.dev.vars`, and fill in `GITHUB_CLIENT_ID` and
    `GITHUB_CLIENT_SECRET`. A "Sign in with GitHub" button appears when both are set.
 
+To jump straight to a pull request, pass its URL (or `owner/repo#123`) as `?pr=`, e.g.
+<http://localhost:4321/?pr=https://github.com/owner/repo/pull/123>. You'll be redirected
+to `/owner/repo/pull/123`.
+
 No token handy? <http://localhost:4321/demo/demo/pull/1> loads a fixture pull request
 where replies and resolves are simulated locally.
 

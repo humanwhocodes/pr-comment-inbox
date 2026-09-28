@@ -6,6 +6,14 @@ import PrPicker from '../components/PrPicker';
 import Footer from '../components/Footer';
 import { fetchViewer } from '../lib/github';
 import { clearToken } from '../lib/auth';
+import { parsePrReference, prPath } from '../lib/pr-reference';
+
+const pr = Astro.url.searchParams.get('pr');
+if (pr) {
+  const ref = parsePrReference(pr);
+  if (ref) return Astro.redirect(prPath(ref));
+  return Astro.redirect('/?error=' + encodeURIComponent('That is not a valid pull request URL.'));
+}
 
 const oauthConfigured = Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET);
 const error = Astro.url.searchParams.get('error');
