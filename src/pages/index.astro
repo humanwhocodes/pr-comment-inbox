@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import Layout from '../layouts/Layout.astro';
 import ThemeToggle from '../components/ThemeToggle';
 import PrPicker from '../components/PrPicker';
+import Footer from '../components/Footer';
 import { fetchViewer } from '../lib/github';
 import { clearToken } from '../lib/auth';
 
@@ -95,5 +96,7 @@ if (Astro.locals.token) {
     <p class="mt-6 text-center text-xs text-fg-muted">
       No token handy? <a href="/demo/demo/pull/1" class="text-accent hover:underline">Try the demo pull request</a>.
     </p>
+
+    <Footer class="mt-10" />
   </main>
 </Layout>

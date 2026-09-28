@@ -20,15 +20,17 @@ export interface ThreadItem {
   thread: Thread;
   isResolved: boolean;
   isRead: boolean;
+  /** Unread and either unresolved or active again since the viewer last read it. */
+  needsAttention: boolean;
   isOutdated: boolean;
   mentionsViewer: boolean;
 }
 
-export type Filter = 'unresolved' | 'resolved' | 'outdated' | 'mentions' | 'read' | 'all';
+export type Filter = 'inbox' | 'resolved' | 'outdated' | 'mentions' | 'read' | 'all';
 export type Sort = 'unresolved' | 'newest' | 'oldest' | 'file';
 
 export const FILTERS: { key: Filter; label: string }[] = [
-  { key: 'unresolved', label: 'Unresolved' },
+  { key: 'inbox', label: 'Inbox' },
   { key: 'resolved', label: 'Resolved' },
   { key: 'outdated', label: 'Outdated' },
   { key: 'mentions', label: '@mentions' },
@@ -83,7 +85,7 @@ function ThreadBadges({ item }: { item: ThreadItem }) {
       )}
       {item.mentionsViewer && (
         <span class="badge border border-attention/40 bg-attention-bg text-attention">
-          <MentionIcon size={12} /> Mentions you
+          <MentionIcon size={12} /> Mention
         </span>
       )}
       {item.isOutdated && <span class="badge border border-border text-fg-muted">Outdated</span>}
@@ -248,7 +250,7 @@ export default function Sidebar(props: Props) {
                     <div class="flex items-baseline gap-1.5">
                       <span class="truncate text-sm font-semibold">{root.author.login}</span>
                       <span class="ml-auto inline-flex shrink-0 items-center gap-1.5 self-center text-xs text-fg-muted">
-                        {!item.isRead && !item.isResolved && (
+                        {item.needsAttention && (
                           <span class="h-2 w-2 rounded-full bg-danger" title="Unread" />
                         )}
                         {item.isRead && <span class="h-2 w-2 rounded-full bg-success/60" title="Read" />}

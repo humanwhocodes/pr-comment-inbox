@@ -34,11 +34,7 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
   const inline = thread.kind === 'inline';
   const viewer = data.viewer.login;
 
-  const canResolve = inline
-    ? item.isResolved
-      ? thread.viewerCanUnresolve
-      : thread.viewerCanResolve
-    : true;
+  const canResolve = inline && (item.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve);
 
   const changesRequested = inline
     ? thread.reviewState === 'CHANGES_REQUESTED'
@@ -80,11 +76,10 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
               </span>
             )}
             {item.isOutdated && <span class="badge border border-border">Outdated</span>}
-            <span>{item.isResolved ? 'Resolved conversation' : 'Unresolved conversation'}</span>
-            {!inline && (
-              <span>
-                · thread with @{thread.authorLogin}: their comments and comments mentioning them
-              </span>
+            {inline ? (
+              <span>{item.isResolved ? 'Resolved conversation' : 'Unresolved conversation'}</span>
+            ) : (
+              <span>Thread with @{thread.authorLogin}: their comments and comments mentioning them</span>
             )}
           </div>
         </div>
@@ -105,30 +100,24 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
           <button
             type="button"
             class="btn btn-sm"
-            title={item.isRead ? 'Mark as unread' : 'Mark as read (hides it from the unresolved list until there is new activity)'}
+            title={item.isRead ? 'Mark as unread' : 'Mark as read (hides it from your inbox until there is new activity)'}
             onClick={() => onMarkRead(!item.isRead)}
           >
             {item.isRead ? <EyeIcon size={14} /> : <DoubleCheckIcon size={14} />}
             <span class="hidden sm:inline">{item.isRead ? 'Mark unread' : 'Mark read'}</span>
           </button>
-          <button
-            type="button"
-            class={`btn btn-sm ${item.isResolved ? '' : 'btn-primary'}`}
-            disabled={busy || !canResolve}
-            title={
-              inline
-                ? item.isResolved
-                  ? 'Unresolve this review thread on GitHub'
-                  : 'Resolve this review thread on GitHub'
-                : item.isResolved
-                  ? 'Show this thread again'
-                  : 'Hide this thread (stored in this browser only)'
-            }
-            onClick={() => void onResolve(!item.isResolved)}
-          >
-            {busy ? <SpinnerIcon size={14} /> : <CheckCircleIcon size={14} />}
-            {item.isResolved ? 'Unresolve' : 'Resolve thread'}
-          </button>
+          {inline && (
+            <button
+              type="button"
+              class={`btn btn-sm ${item.isResolved ? '' : 'btn-primary'}`}
+              disabled={busy || !canResolve}
+              title={item.isResolved ? 'Unresolve this review thread on GitHub' : 'Resolve this review thread on GitHub'}
+              onClick={() => void onResolve(!item.isResolved)}
+            >
+              {busy ? <SpinnerIcon size={14} /> : <CheckCircleIcon size={14} />}
+              {item.isResolved ? 'Unresolve' : 'Resolve thread'}
+            </button>
+          )}
         </div>
       </header>
 
@@ -137,9 +126,7 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
           {item.isResolved && (
             <div class="flex items-center gap-2 rounded-md border border-success/30 bg-success-bg px-3 py-2 text-sm text-success">
               <CheckCircleIcon />
-              {inline
-                ? 'This conversation is resolved on GitHub.'
-                : 'You resolved this thread locally. It stays visible under the Resolved filter.'}
+              This conversation is resolved on GitHub.
             </div>
           )}
 
@@ -168,7 +155,7 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
                 initialValue={initialReply}
                 placeholder={inline ? 'Reply to this review thread…' : `Reply to @${thread.kind === 'toplevel' ? thread.authorLogin : root.author.login}…`}
                 submitLabel={inline ? 'Reply' : 'Comment'}
-                submitWithResolveLabel={inline ? 'Reply & resolve' : 'Comment & resolve'}
+                submitWithResolveLabel="Reply & resolve"
                 canResolve={!item.isResolved && canResolve}
                 busy={busy}
                 onSubmit={onReply}

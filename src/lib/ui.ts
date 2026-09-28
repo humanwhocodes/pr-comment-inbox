@@ -129,13 +129,11 @@ export function parseHunk(hunk: string): DiffLine[] {
 /* ------------------------------------------------------------------ */
 
 export interface LocalState {
-  /** Top-level thread ids the viewer resolved locally. */
-  resolved: string[];
   /** Thread id → updatedAt that was marked read. Newer activity makes it unread again. */
   read: Record<string, string>;
 }
 
-const EMPTY: LocalState = { resolved: [], read: {} };
+const EMPTY: LocalState = { read: {} };
 
 export function storageKey(owner: string, repo: string, number: number) {
   return `pr-comments:${owner.toLowerCase()}/${repo.toLowerCase()}#${number}`;
@@ -146,7 +144,7 @@ export function loadLocal(key: string): LocalState {
     const raw = localStorage.getItem(key);
     if (!raw) return { ...EMPTY };
     const parsed = JSON.parse(raw) as Partial<LocalState>;
-    return { resolved: parsed.resolved ?? [], read: parsed.read ?? {} };
+    return { read: parsed.read ?? {} };
   } catch {
     return { ...EMPTY };
   }

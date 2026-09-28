@@ -77,22 +77,25 @@ export default function DiffHunk({ thread }: { thread: InlineThread }) {
       {!collapsed && (
         <div class="scrollbar-thin overflow-x-auto">
           {lines.length === 0 && <p class="px-3 py-2 text-sm text-fg-muted">No diff context available.</p>}
-          {lines.map((l, i) => {
-            const target = isTarget(sideNo(l));
-            const ranged = inRange(sideNo(l));
-            const cls =
-              l.type === 'add' ? 'diff-add' : l.type === 'del' ? 'diff-del' : l.type === 'hunk' ? 'diff-hunk' : '';
-            return (
-              <div key={i} class={`diff-line ${cls} ${target ? 'diff-target' : ''} ${ranged && !target ? 'bg-accent/5' : ''}`}>
-                <span class="diff-line-num">{l.oldNo ?? ''}</span>
-                <span class="diff-line-num">{l.newNo ?? ''}</span>
-                <span class={`diff-line-marker ${l.type === 'add' ? 'text-success' : l.type === 'del' ? 'text-danger' : 'text-fg-muted'}`}>
-                  {l.type === 'add' ? '+' : l.type === 'del' ? '-' : ''}
-                </span>
-                <span class={`diff-line-content ${l.type === 'hunk' ? 'text-fg-muted' : ''}`}>{l.text}</span>
-              </div>
-            );
-          })}
+          {/* w-max + min-w-full keeps every row as wide as the longest line so backgrounds span the scroll area */}
+          <div class="w-max min-w-full">
+            {lines.map((l, i) => {
+              const target = isTarget(sideNo(l));
+              const ranged = inRange(sideNo(l));
+              const cls =
+                l.type === 'add' ? 'diff-add' : l.type === 'del' ? 'diff-del' : l.type === 'hunk' ? 'diff-hunk' : '';
+              return (
+                <div key={i} class={`diff-line ${cls} ${target ? 'diff-target' : ''} ${ranged && !target ? 'bg-accent/5' : ''}`}>
+                  <span class="diff-line-num">{l.oldNo ?? ''}</span>
+                  <span class="diff-line-num">{l.newNo ?? ''}</span>
+                  <span class={`diff-line-marker ${l.type === 'add' ? 'text-success' : l.type === 'del' ? 'text-danger' : 'text-fg-muted'}`}>
+                    {l.type === 'add' ? '+' : l.type === 'del' ? '-' : ''}
+                  </span>
+                  <span class={`diff-line-content ${l.type === 'hunk' ? 'text-fg-muted' : ''}`}>{l.text}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </section>

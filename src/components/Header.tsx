@@ -1,5 +1,5 @@
 import type { PullRequestData } from '../lib/types';
-import { ExternalLinkIcon, GitMergeIcon, GitPullRequestIcon, MarkGithubIcon } from './Icons';
+import { ExternalLinkIcon, GitMergeIcon, GitPullRequestIcon, InboxIcon } from './Icons';
 import ThemeToggle from './ThemeToggle';
 
 interface Props {
@@ -33,47 +33,26 @@ function StateBadge({ data }: { data: PullRequestData }) {
       </span>
     );
   }
-  const decision =
-    pr.reviewDecision === 'CHANGES_REQUESTED'
-      ? ' (Changes requested)'
-      : pr.reviewDecision === 'APPROVED'
-        ? ' (Approved)'
-        : '';
   return (
     <span class="badge bg-success-bg px-2 py-1 text-xs text-success">
-      <GitPullRequestIcon size={12} /> Open{decision}
+      <GitPullRequestIcon size={12} /> Open
     </span>
   );
 }
 
 export default function Header({ owner, repo, number, data, demo }: Props) {
   return (
-    <header class="flex flex-col border-b border-border bg-canvas-subtle">
-      <div class="flex items-center gap-3 px-4 py-2">
-        <a href="/" class="flex items-center gap-2 text-fg" title="Home">
-          <MarkGithubIcon size={24} />
+    <header class="flex flex-col border-b border-border">
+      <div class="flex items-center gap-3 border-b border-border bg-canvas-subtle px-4 py-2">
+        <a href="/" class="flex shrink-0 items-center gap-2 text-fg" title="Home">
+          {/* Placeholder logo */}
+          <span class="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-white">
+            <InboxIcon size={16} />
+          </span>
+          <span class="text-sm font-semibold">PR Comment Inbox</span>
         </a>
-        <nav class="flex min-w-0 items-center gap-1 text-sm text-fg-muted" aria-label="Breadcrumb">
-          <a href={`https://github.com/${owner}`} target="_blank" rel="noreferrer" class="hover:text-accent">
-            {owner}
-          </a>
-          <span>/</span>
-          <a href={`https://github.com/${owner}/${repo}`} target="_blank" rel="noreferrer" class="hover:text-accent">
-            {repo}
-          </a>
-          <span>/</span>
-          <span>pull</span>
-          <span>/</span>
-          <span class="font-semibold text-fg">{number}</span>
-        </nav>
         {demo && <span class="badge bg-attention-bg text-attention">Demo</span>}
         <div class="ml-auto flex items-center gap-2">
-          {data && (
-            <a href={data.pr.url} target="_blank" rel="noreferrer" class="btn btn-sm">
-              <ExternalLinkIcon size={14} />
-              <span class="hidden sm:inline">View on GitHub</span>
-            </a>
-          )}
           <ThemeToggle />
           {data && (
             <form method="post" action="/api/auth/logout" class="flex items-center gap-2">
@@ -87,24 +66,38 @@ export default function Header({ owner, repo, number, data, demo }: Props) {
           )}
         </div>
       </div>
-      <div class="flex flex-wrap items-center gap-2 px-4 pb-2.5">
+      <div class="flex items-center gap-4 bg-canvas px-4 py-2.5">
         {data ? (
           <>
-            <StateBadge data={data} />
-            <h1 class="min-w-0 truncate text-base font-semibold">{data.pr.title}</h1>
-            <span class="flex items-center gap-1 text-xs text-fg-muted">
-              <code class="rounded bg-accent/10 px-1 py-0.5 text-accent">{data.pr.headRefName}</code>
-              into
-              <code class="rounded bg-accent/10 px-1 py-0.5 text-accent">{data.pr.baseRefName}</code>
-            </span>
-            <span class="ml-auto hidden items-center gap-3 text-xs text-fg-muted md:flex">
-              <span>{data.pr.changedFiles} files changed</span>
-              <span class="text-success">+{data.pr.additions}</span>
-              <span class="text-danger">-{data.pr.deletions}</span>
-            </span>
+            <div class="min-w-0 flex-1">
+              <h1 class="truncate text-base font-semibold">
+                <a href={data.pr.url} target="_blank" rel="noreferrer" class="hover:text-accent hover:underline">
+                  {data.pr.title} <span class="font-normal text-fg-muted">#{number}</span>
+                </a>
+              </h1>
+              <div class="mt-1 flex min-w-0 items-center gap-2 text-xs text-fg-muted">
+                <StateBadge data={data} />
+                <a
+                  href={`https://github.com/${owner}/${repo}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  class="truncate hover:text-accent"
+                >
+                  {owner}/{repo}
+                </a>
+                <span class="hidden sm:inline" aria-hidden="true">·</span>
+                <span class="hidden truncate font-mono sm:inline">
+                  {data.pr.headRefName} → {data.pr.baseRefName}
+                </span>
+              </div>
+            </div>
+            <a href={data.pr.url} target="_blank" rel="noreferrer" class="btn btn-sm shrink-0">
+              <ExternalLinkIcon size={14} />
+              <span class="hidden sm:inline">View on GitHub</span>
+            </a>
           </>
         ) : (
-          <div class="h-6 w-2/3 animate-pulse rounded bg-canvas-inset" />
+          <div class="h-11 w-2/3 animate-pulse rounded bg-canvas-inset" />
         )}
       </div>
     </header>

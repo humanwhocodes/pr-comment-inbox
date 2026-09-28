@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import type { Comment, PullRequestData, Thread } from '../lib/types';
 import { excerpt, loadLocal, saveLocal, storageKey, threadLocation, type LocalState } from '../lib/ui';
+import Footer from './Footer';
 import Header from './Header';
 import { AlertIcon, CommentIcon, SpinnerIcon } from './Icons';
 import Sidebar, { type Filter, type Sort, type ThreadItem } from './Sidebar';
@@ -25,9 +26,9 @@ export default function App({ owner, repo, number, demo }: Props) {
   const [data, setData] = useState<PullRequestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [local, setLocal] = useState<LocalState>({ resolved: [], read: {} });
+  const [local, setLocal] = useState<LocalState>({ read: {} });
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>('unresolved');
+  const [filter, setFilter] = useState<Filter>('inbox');
   const [sort, setSort] = useState<Sort>('unresolved');
   const [search, setSearch] = useState('');
   const [checked, setChecked] = useState<Set<string>>(new Set());
@@ -36,15 +37,18 @@ export default function App({ owner, repo, number, demo }: Props) {
 
   /* ---------------- data loading ---------------- */
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<PullRequestData | null> => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(apiBase, { headers: { accept: 'application/json' } });
       if (!res.ok) throw new Error(await readError(res));
-      setData((await res.json()) as PullRequestData);
+      const fresh = (await res.json()) as PullRequestData;
+      setData(fresh);
+      return fresh;
     } catch (err) {
       setError((err as Error).message);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -71,21 +75,29 @@ export default function App({ owner, repo, number, demo }: Props) {
   const items: ThreadItem[] = useMemo(() => {
     if (!data) return [];
     const viewer = data.viewer.login.toLowerCase();
-    return data.threads.map((thread) => ({
-      thread,
-      isResolved: thread.kind === 'inline' ? thread.isResolved : local.resolved.includes(thread.id),
-      isRead: (local.read[thread.id] ?? '') >= thread.updatedAt,
-      isOutdated: thread.kind === 'inline' && thread.isOutdated,
-      mentionsViewer: thread.mentions.includes(viewer),
-    }));
+    return data.threads.map((thread) => {
+      const readAt = local.read[thread.id];
+      const isResolved = thread.kind === 'inline' && thread.isResolved;
+      const isRead = readAt !== undefined && readAt >= thread.updatedAt;
+      // A resolved thread only resurfaces if the viewer had read it and something happened since.
+      const hasNewActivity = readAt !== undefined && readAt < thread.updatedAt;
+      return {
+        thread,
+        isResolved,
+        isRead,
+        needsAttention: !isRead && (!isResolved || hasNewActivity),
+        isOutdated: thread.kind === 'inline' && thread.isOutdated,
+        mentionsViewer: thread.mentions.includes(viewer),
+      };
+    });
   }, [data, local]);
 
   const counts = useMemo<Record<Filter, number>>(
     () => ({
-      unresolved: items.filter((i) => !i.isResolved && !i.isRead).length,
+      inbox: items.filter((i) => i.needsAttention).length,
       resolved: items.filter((i) => i.isResolved).length,
       outdated: items.filter((i) => i.isOutdated).length,
-      mentions: items.filter((i) => i.mentionsViewer && !i.isRead).length,
+      mentions: items.filter((i) => i.mentionsViewer && i.needsAttention).length,
       read: items.filter((i) => i.isRead).length,
       all: items.length,
     }),
@@ -103,14 +115,14 @@ export default function App({ owner, repo, number, demo }: Props) {
 
     const byFilter = items.filter((i) => {
       switch (filter) {
-        case 'unresolved':
-          return !i.isResolved && !i.isRead;
+        case 'inbox':
+          return i.needsAttention;
         case 'resolved':
           return i.isResolved;
         case 'outdated':
           return i.isOutdated;
         case 'mentions':
-          return i.mentionsViewer && !i.isRead;
+          return i.mentionsViewer && i.needsAttention;
         case 'read':
           return i.isRead;
         default:
@@ -152,12 +164,13 @@ export default function App({ owner, repo, number, demo }: Props) {
 
   /* ---------------- actions ---------------- */
 
-  function markRead(ids: string[], read: boolean) {
-    if (!data) return;
+  /** `source` lets callers that just refetched pass fresh data instead of this render's `data`. */
+  function markRead(ids: string[], read: boolean, source: PullRequestData | null = data) {
+    if (!source) return;
     updateLocal((prev) => {
       const next = { ...prev, read: { ...prev.read } };
       for (const id of ids) {
-        const thread = data.threads.find((t) => t.id === id);
+        const thread = source.threads.find((t) => t.id === id);
         if (!thread) continue;
         if (read) next.read[id] = thread.updatedAt;
         else delete next.read[id];
@@ -168,13 +181,8 @@ export default function App({ owner, repo, number, demo }: Props) {
 
   async function resolveThread(item: ThreadItem, resolved: boolean) {
     const { thread } = item;
-    if (thread.kind === 'toplevel') {
-      updateLocal((prev) => ({
-        ...prev,
-        resolved: resolved ? [...new Set([...prev.resolved, thread.id])] : prev.resolved.filter((id) => id !== thread.id),
-      }));
-      return;
-    }
+    // Only review threads have a resolved state; top-level threads use read/unread instead.
+    if (thread.kind !== 'inline') return;
     setBusy(true);
     try {
       const res = await fetch(`${apiBase}/resolve`, {
@@ -190,6 +198,8 @@ export default function App({ owner, repo, number, demo }: Props) {
           threads: prev.threads.map((t) => (t.id === thread.id && t.kind === 'inline' ? { ...t, isResolved: result.isResolved } : t)),
         },
       );
+      // Resolving means you've dealt with it; mark read so any later reply brings it back to the inbox.
+      if (result.isResolved) markRead([thread.id], true);
     } finally {
       setBusy(false);
     }
@@ -198,6 +208,7 @@ export default function App({ owner, repo, number, demo }: Props) {
   async function reply(item: ThreadItem, body: string, resolve: boolean) {
     if (!data) return;
     const { thread } = item;
+    let latest: PullRequestData | null = data;
     setBusy(true);
     try {
       const res = await fetch(`${apiBase}/reply`, {
@@ -235,23 +246,22 @@ export default function App({ owner, repo, number, demo }: Props) {
           url: created.url,
           reactions: [],
         };
-        setData((prev) =>
-          prev && {
-            ...prev,
-            threads: prev.threads.map((t) =>
-              t.id === thread.id ? { ...t, comments: [...t.comments, comment], updatedAt: now } : t,
-            ),
-          },
-        );
+        latest = {
+          ...data,
+          threads: data.threads.map((t) =>
+            t.id === thread.id ? { ...t, comments: [...t.comments, comment], updatedAt: now } : t,
+          ),
+        };
+        setData(latest);
       }
     } finally {
       setBusy(false);
     }
 
     if (resolve) await resolveThread(item, true);
-    if (!demo) await load();
-    // A reply from the viewer counts as having read the thread up to now.
-    if (!resolve) markRead([thread.id], true);
+    if (!demo) latest = (await load()) ?? latest;
+    // A reply from the viewer counts as having read the thread up to and including that reply.
+    markRead([thread.id], true, latest);
   }
 
   function select(id: string) {
@@ -280,7 +290,7 @@ export default function App({ owner, repo, number, demo }: Props) {
         </div>
       )}
 
-      <div class="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(320px,400px)_1fr]">
+      <div class="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
         <div class={`min-h-0 ${mobileShowThread ? 'hidden lg:block' : 'block'}`}>
           <Sidebar
             items={visible}
@@ -316,7 +326,7 @@ export default function App({ owner, repo, number, demo }: Props) {
           />
         </div>
 
-        <main class={`min-h-0 ${mobileShowThread ? 'block' : 'hidden lg:block'}`}>
+        <main class={`min-h-0 min-w-0 ${mobileShowThread ? 'block' : 'hidden lg:block'}`}>
           {data && selected ? (
             <ThreadView
               key={selected.thread.id}
@@ -347,6 +357,8 @@ export default function App({ owner, repo, number, demo }: Props) {
           )}
         </main>
       </div>
+
+      <Footer class="border-t border-border bg-canvas-subtle px-4 py-1.5" />
     </div>
   );
 }
