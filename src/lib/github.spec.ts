@@ -1,5 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { graphql, rest } from './github';
+import { buildTopLevelThreads, graphql, rest } from './github';
+import type { Comment } from './types';
+
+function makeComment(id: string, login: string, createdAt: string, body: string): Comment {
+  return {
+    id,
+    kind: 'issue',
+    author: { login, avatarUrl: `https://example.com/${login}.png`, url: `https://example.com/${login}` },
+    authorAssociation: 'CONTRIBUTOR',
+    body,
+    bodyHTML: `<p>${body}</p>`,
+    createdAt,
+    url: `https://example.com/${id}`,
+    reactions: [],
+  };
+}
 
 describe('graphql', () => {
   afterEach(() => {
@@ -49,5 +64,20 @@ describe('rest', () => {
     await rest<{ ok: boolean }>(null, '/test');
     init = fetchMock.mock.calls[0]?.[1] as RequestInit;
     expect((init.headers as Record<string, string>).authorization).toBeUndefined();
+  });
+});
+
+describe('buildTopLevelThreads', () => {
+  it('excludes leading @mention comments from the authors own thread', () => {
+    const threads = buildTopLevelThreads([
+      makeComment('1', 'alice', '2026-01-01T00:00:00.000Z', 'Initial review note.'),
+      makeComment('2', 'bob', '2026-01-01T00:01:00.000Z', '@alice thanks, fixed now.'),
+    ]);
+
+    const bob = threads.find((thread) => thread.authorLogin === 'bob');
+    const alice = threads.find((thread) => thread.authorLogin === 'alice');
+
+    expect(bob).toBeUndefined();
+    expect(alice?.comments.map((comment) => comment.id)).toEqual(['1', '2']);
   });
 });
