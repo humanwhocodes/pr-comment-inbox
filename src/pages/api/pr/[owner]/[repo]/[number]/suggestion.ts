@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Applies accepted code suggestions to the pull-request branch.
+ */
+
 import type { APIRoute } from 'astro';
 import { error, json } from '../../../../../../lib/auth';
 import { applyInlineSuggestion } from '../../../../../../lib/github';

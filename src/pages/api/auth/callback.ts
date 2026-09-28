@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Handles GitHub OAuth callback exchange and token cookie setup.
+ */
+
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { STATE_COOKIE, isSecure, setToken } from '../../../lib/auth';

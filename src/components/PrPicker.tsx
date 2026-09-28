@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Implements the pull-request reference input and navigation picker.
+ */
+
 import { useState } from 'preact/hooks';
 import { GitPullRequestIcon } from './Icons';
 import { parsePrReference, prPath } from '../lib/pr-reference';

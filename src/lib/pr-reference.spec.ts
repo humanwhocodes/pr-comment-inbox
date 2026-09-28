@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Unit tests for pull-request reference parsing and route building.
+ */
+
 import { describe, expect, it } from 'vitest';
 import { parsePrReference, prPath } from './pr-reference';
 

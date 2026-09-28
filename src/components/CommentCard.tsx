@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Renders a single comment with metadata, markdown content, and reactions.
+ */
+
 import { useMemo } from 'preact/hooks';
 import { extractSuggestionBlocks, type SourceLine, renderSuggestions } from '../lib/suggestions';
 import type { Comment } from '../lib/types';

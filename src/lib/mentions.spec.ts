@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Unit tests for @mention parsing and matching helpers.
+ */
+
 import { describe, expect, it } from 'vitest';
 import { extractMentions, mentionsLogin } from './mentions';
 

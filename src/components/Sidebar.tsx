@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Renders thread filters, sorting controls, and thread list selection UI.
+ */
+
 import type { Thread } from '../lib/types';
 import { excerpt, firstComment, threadLocation, timeAgo } from '../lib/ui';
 import {

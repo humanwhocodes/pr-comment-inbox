@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Unit tests for UI-focused formatting and diff parsing helpers.
+ */
+
 import { describe, expect, it } from 'vitest';
 import { excerpt, parseHunk, storageKey, threadLocation, timeAgo } from './ui';
 import type { Thread } from './types';

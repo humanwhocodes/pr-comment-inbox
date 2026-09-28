@@ -1,4 +1,8 @@
 /**
+ * @fileoverview Parses GitHub-style @mentions from markdown comment bodies.
+ */
+
+/**
  * Extract @-mentioned logins from a markdown body (GitHub login rules).
  * @param body Markdown body to inspect.
  * @returns Lower-cased unique login names.

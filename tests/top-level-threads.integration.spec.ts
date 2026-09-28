@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Integration tests for top-level thread grouping behavior.
+ */
+
 import { describe, expect, it } from 'vitest';
 import { buildTopLevelThreads } from '../src/lib/github';
 import type { Comment } from '../src/lib/types';

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Configures Vitest test discovery for unit and integration suites.
+ */
+
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({

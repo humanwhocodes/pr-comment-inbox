@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Returns normalized pull-request data for the inbox UI.
+ */
+
 import type { APIRoute } from 'astro';
 import { json } from '../../../../../../lib/auth';
 import { demoData } from '../../../../../../lib/demo';

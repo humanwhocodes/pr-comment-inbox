@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Provides the markdown reply editor with formatting actions and preview support.
+ */
+
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { mentionsLogin } from '../lib/mentions';
 import {

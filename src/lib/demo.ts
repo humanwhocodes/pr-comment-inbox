@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Defines demo pull-request fixture data and demo routing helpers.
+ */
+
 import type { Actor, Comment, InlineThread, PullRequestData } from './types';
 import { buildTopLevelThreads } from './github';
 

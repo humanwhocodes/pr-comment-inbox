@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Starts the GitHub OAuth login flow.
+ */
+
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { STATE_COOKIE, isSecure } from '../../../lib/auth';

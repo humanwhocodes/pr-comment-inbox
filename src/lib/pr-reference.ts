@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Parses user pull-request references and builds internal PR route paths.
+ */
+
 export interface PrReference {
   owner: string;
   repo: string;

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Renders pull-request summary metadata and header controls for the app.
+ */
+
 import type { PullRequestData } from '../lib/types';
 import { ExternalLinkIcon, GitMergeIcon, GitPullRequestIcon, InboxIcon } from './Icons';
 import ThemeToggle from './ThemeToggle';

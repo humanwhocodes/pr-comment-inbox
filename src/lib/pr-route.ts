@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Validates pull-request route params and normalizes API error handling.
+ */
+
 import type { APIContext } from 'astro';
 import { GitHubError } from './github';
 import { isDemo } from './demo';

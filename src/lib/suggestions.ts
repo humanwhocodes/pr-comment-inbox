@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Parses and renders suggested-change blocks for inline review comments.
+ */
+
 import type { InlineThread } from './types';
 import { parseHunk } from './ui';
 

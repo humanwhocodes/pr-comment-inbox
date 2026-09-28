@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Resolves or reopens inline review threads via GitHub.
+ */
+
 import type { APIRoute } from 'astro';
 import { error, json } from '../../../../../../lib/auth';
 import { setThreadResolved } from '../../../../../../lib/github';

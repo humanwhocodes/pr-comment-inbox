@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Declares ambient TypeScript types used by Astro and the project runtime.
+ */
+
 /// <reference types="astro/client" />
 
 declare namespace Cloudflare {

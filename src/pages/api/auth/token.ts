@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Accepts personal access tokens and validates sign-in.
+ */
+
 import type { APIRoute } from 'astro';
 import { isSecure, setToken } from '../../../lib/auth';
 import { fetchViewer } from '../../../lib/github';

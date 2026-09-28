@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Unit tests for GitHub API helper behavior and thread grouping logic.
+ */
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildTopLevelThreads, graphql, rest } from './github';
 import type { Comment } from './types';

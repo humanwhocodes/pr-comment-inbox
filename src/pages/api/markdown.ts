@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Renders markdown through GitHub for editor preview requests.
+ */
+
 import type { APIRoute } from 'astro';
 import { error } from '../../lib/auth';
 import { renderMarkdown } from '../../lib/github';

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Creates replies for inline or top-level pull-request threads.
+ */
+
 import type { APIRoute } from 'astro';
 import { error, json } from '../../../../../../lib/auth';
 import { addIssueComment, replyToReviewThread } from '../../../../../../lib/github';

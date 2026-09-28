@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Hosts the main pull-request comment inbox application state and orchestration logic.
+ */
+
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import type { Comment, PullRequestData, Thread } from '../lib/types';
 import { excerpt, loadLocal, saveLocal, storageKey, threadLocation, type LocalState } from '../lib/ui';

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Provides UI formatting, diff parsing, and local-storage state helpers.
+ */
+
 import type { Comment, InlineThread, Thread } from './types';
 
 /**

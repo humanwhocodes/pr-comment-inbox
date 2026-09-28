@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Implements GitHub GraphQL/REST access and pull-request normalization logic.
+ */
+
 import type {
   Actor,
   Comment,
