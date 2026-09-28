@@ -193,12 +193,20 @@ function allMentions(comments: Comment[]): string[] {
   return [...set];
 }
 
+function leadingMention(body: string): string | null {
+  const match = /^\s*@([a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?)(?![\w-])/i.exec(body);
+  return match?.[1].toLowerCase() ?? null;
+}
+
 /**
  * Group top-level comments (issue comments + review bodies) into per-author threads:
  * every comment written by the author plus every comment that @-mentions them.
+ * If an author's top-level comment starts by @-mentioning someone who also has
+ * a top-level comment, don't include that comment in the author's own thread.
  */
 export function buildTopLevelThreads(comments: Comment[]): TopLevelThread[] {
   const sorted = [...comments].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const commenters = new Set(sorted.map((c) => c.author.login.toLowerCase()));
   const threads: TopLevelThread[] = [];
   const seen = new Set<string>();
   for (const c of sorted) {
@@ -207,8 +215,16 @@ export function buildTopLevelThreads(comments: Comment[]): TopLevelThread[] {
     if (seen.has(key)) continue;
     seen.add(key);
     const members = sorted.filter(
-      (x) => x.author.login.toLowerCase() === key || extractMentions(x.body).includes(key),
+      (x) => {
+        if (x.author.login.toLowerCase() === key) {
+          const mention = leadingMention(x.body);
+          if (mention && mention !== key && commenters.has(mention)) return false;
+          return true;
+        }
+        return extractMentions(x.body).includes(key);
+      },
     );
+    if (members.length === 0) continue;
     threads.push({
       id: `toplevel:${key}`,
       kind: 'toplevel',
