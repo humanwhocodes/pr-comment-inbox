@@ -13,7 +13,7 @@ function who(login: string): Actor {
   return { login, avatarUrl: `https://github.com/identicons/${login}.png`, url: `https://github.com/${login}` };
 }
 
-const dan = who('dan-abramov');
+const dan = who('dan-johnson');
 const sarah = who('sarah-codes');
 const alex = who('alex-infra');
 const sophia = who('sophia-core');
