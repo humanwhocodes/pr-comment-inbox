@@ -27,9 +27,11 @@ describe('buildTopLevelThreads integration', () => {
 
     const threads = buildTopLevelThreads(comments);
     const alice = threads.find((thread) => thread.authorLogin === 'alice');
+    const bob = threads.find((thread) => thread.authorLogin === 'bob');
 
     expect(alice?.comments.map((comment) => comment.id)).toEqual(['1', '2', '3', '4']);
     expect(alice?.mentions).toContain('bob');
     expect(alice?.updatedAt).toBe('2026-01-01T00:03:00.000Z');
+    expect(bob?.comments.map((comment) => comment.id)).toEqual(['4']);
   });
 });
