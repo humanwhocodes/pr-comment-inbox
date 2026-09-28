@@ -21,6 +21,8 @@ function escapeHTML(text: string): string {
 /**
  * The lines an inline thread is attached to, as they read on the commented side
  * of the diff. These are what a ```suggestion block replaces.
+ * @param thread Inline thread with diff metadata.
+ * @returns Source lines that would be replaced by a suggestion.
  */
 export function threadSourceLines(thread: InlineThread): SourceLine[] {
   const all = parseHunk(thread.diffHunk);
@@ -57,9 +59,13 @@ function rowsFromTable(el: Element): SuggestionRow[] {
   const rows: SuggestionRow[] = [];
   for (const tr of Array.from(el.querySelectorAll('tr'))) {
     const code = tr.querySelector('.blob-code-addition, .blob-code-deletion, [class*="blob-code-inner"]');
-    if (!code) continue;
+    if (!code) {
+      continue;
+    }
     const type = code.className.includes('addition') ? 'add' : code.className.includes('deletion') ? 'del' : null;
-    if (!type) continue;
+    if (!type) {
+      continue;
+    }
     const num = tr.querySelector('[data-line-number]')?.getAttribute('data-line-number');
     rows.push({ type, no: num ? Number(num) : null, html: code.innerHTML });
   }
@@ -81,9 +87,14 @@ function rowsFromCode(text: string, source: SourceLine[]): SuggestionRow[] {
  * Rewrite suggested-change blocks in a comment's HTML into GitHub-style diffs.
  * Handles both GitHub's pre-rendered suggestion tables and bare
  * ```suggestion code blocks (e.g. from the /markdown API).
+ * @param html Comment HTML.
+ * @param source Source lines tied to the comment location.
+ * @returns HTML with suggestion blocks rewritten to diff-style markup.
  */
 export function renderSuggestions(html: string, source: SourceLine[] = []): string {
-  if (!/suggest/i.test(html) || typeof document === 'undefined') return html;
+  if (!/suggest/i.test(html) || typeof document === 'undefined') {
+    return html;
+  }
   const tpl = document.createElement('template');
   tpl.innerHTML = html;
   const root = tpl.content;
@@ -91,7 +102,9 @@ export function renderSuggestions(html: string, source: SourceLine[] = []): stri
 
   for (const blob of Array.from(root.querySelectorAll('.js-suggested-changes-blob'))) {
     const rows = rowsFromTable(blob);
-    if (rows.length === 0) continue;
+    if (rows.length === 0) {
+      continue;
+    }
     blob.outerHTML = renderRows(rows);
     changed = true;
   }
@@ -102,7 +115,9 @@ export function renderSuggestions(html: string, source: SourceLine[] = []): stri
   for (const el of Array.from(fenced)) {
     const target = el.closest('.highlight-source-suggestion') ?? el.closest('pre') ?? el;
     // Nested matches (a <pre> inside .highlight-source-suggestion) are already replaced.
-    if (!root.contains(target)) continue;
+    if (!root.contains(target)) {
+      continue;
+    }
     const text = target.textContent ?? '';
     target.outerHTML = renderRows(rowsFromCode(text, source));
     changed = true;
@@ -111,6 +126,11 @@ export function renderSuggestions(html: string, source: SourceLine[] = []): stri
   return changed ? tpl.innerHTML : html;
 }
 
+/**
+ * Extracts fenced suggestion blocks from markdown text.
+ * @param markdown Markdown content that may include suggestion fences.
+ * @returns Suggestion block contents in encounter order.
+ */
 export function extractSuggestionBlocks(markdown: string): string[] {
   const blocks: string[] = [];
   const re = /```suggestion[^\n]*\n([\s\S]*?)```/gim;

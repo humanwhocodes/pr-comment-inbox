@@ -11,7 +11,9 @@ import { parsePrReference, prPath } from '../lib/pr-reference';
 const pr = Astro.url.searchParams.get('pr');
 if (pr) {
   const ref = parsePrReference(pr);
-  if (ref) return Astro.redirect(prPath(ref));
+  if (ref) {
+    return Astro.redirect(prPath(ref));
+  }
   return Astro.redirect('/?error=' + encodeURIComponent('That is not a valid pull request URL.'));
 }
 

@@ -16,7 +16,9 @@ interface SuggestionBody {
 
 export const POST: APIRoute = async (ctx) => {
   const p = readParams(ctx);
-  if (p instanceof Response) return p;
+  if (p instanceof Response) {
+    return p;
+  }
   const input = (await ctx.request.json().catch(() => ({}))) as SuggestionBody;
   const owner = (input.owner ?? '').trim();
   const repo = (input.repo ?? '').trim();

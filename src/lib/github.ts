@@ -16,12 +16,24 @@ const USER_AGENT = 'pr-comments-inbox';
 
 export class GitHubError extends Error {
   status: number;
+  /**
+   * @param message Error message.
+   * @param status HTTP status code.
+   */
   constructor(message: string, status: number) {
     super(message);
     this.status = status;
   }
 }
 
+/**
+ * Sends a GitHub GraphQL request.
+ * @param token GitHub token.
+ * @param query GraphQL query text.
+ * @param variables Query variables.
+ * @returns GraphQL data payload.
+ * @throws {GitHubError} When GitHub returns an error response.
+ */
 export async function graphql<T>(
   token: string,
   query: string,
@@ -30,7 +42,7 @@ export async function graphql<T>(
   const res = await fetch(GRAPHQL_URL, {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${token}`,
+      authorization: 'Bearer ' + token,
       'content-type': 'application/json',
       'user-agent': USER_AGENT,
     },
@@ -46,10 +58,20 @@ export async function graphql<T>(
     const status = first.type === 'NOT_FOUND' ? 404 : first.type === 'FORBIDDEN' ? 403 : 400;
     throw new GitHubError(payload.errors.map((e) => e.message).join('; '), status);
   }
-  if (!payload.data) throw new GitHubError('Empty GraphQL response', 500);
+  if (!payload.data) {
+    throw new GitHubError('Empty GraphQL response', 500);
+  }
   return payload.data;
 }
 
+/**
+ * Sends a GitHub REST request.
+ * @param token GitHub token, or null for unauthenticated requests.
+ * @param path API path.
+ * @param init Fetch init options.
+ * @returns Parsed JSON payload or text body.
+ * @throws {GitHubError} When GitHub returns an error response.
+ */
 export async function rest<T>(
   token: string | null,
   path: string,
@@ -61,7 +83,9 @@ export async function rest<T>(
     'x-github-api-version': '2022-11-28',
     ...((init.headers as Record<string, string>) ?? {}),
   };
-  if (token) headers.authorization = `Bearer ${token}`;
+  if (token) {
+    headers.authorization = 'Bearer ' + token;
+  }
   const res = await fetch(`${REST_URL}${path}`, { ...init, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
@@ -189,7 +213,11 @@ function lastDate(comments: Comment[]): string {
 
 function allMentions(comments: Comment[]): string[] {
   const set = new Set<string>();
-  for (const c of comments) for (const m of extractMentions(c.body)) set.add(m);
+  for (const c of comments) {
+    for (const m of extractMentions(c.body)) {
+      set.add(m);
+    }
+  }
   return [...set];
 }
 
@@ -212,19 +240,25 @@ export function buildTopLevelThreads(comments: Comment[]): TopLevelThread[] {
   for (const c of sorted) {
     const login = c.author.login;
     const key = login.toLowerCase();
-    if (seen.has(key)) continue;
+    if (seen.has(key)) {
+      continue;
+    }
     seen.add(key);
     const members = sorted.filter(
       (x) => {
         if (x.author.login.toLowerCase() === key) {
           const mention = leadingMention(x.body);
-          if (mention && mention !== key && commenters.has(mention)) return false;
+          if (mention && mention !== key && commenters.has(mention)) {
+            return false;
+          }
           return true;
         }
         return extractMentions(x.body).includes(key);
       },
     );
-    if (members.length === 0) continue;
+    if (members.length === 0) {
+      continue;
+    }
     threads.push({
       id: `toplevel:${key}`,
       kind: 'toplevel',
@@ -237,9 +271,19 @@ export function buildTopLevelThreads(comments: Comment[]): TopLevelThread[] {
   return threads;
 }
 
+/**
+ * Normalizes GitHub API pull request response data for the UI.
+ * @param owner Repository owner.
+ * @param repo Repository name.
+ * @param raw Raw API response.
+ * @returns Normalized pull request data.
+ * @throws {GitHubError} When the pull request is missing.
+ */
 export function normalize(owner: string, repo: string, raw: RawPRResponse): PullRequestData {
   const pr = raw.repository?.pullRequest;
-  if (!pr) throw new GitHubError('Pull request not found', 404);
+  if (!pr) {
+    throw new GitHubError('Pull request not found', 404);
+  }
 
   const topLevel: Comment[] = [
     ...pr.comments.nodes.map(issueComment),
@@ -299,6 +343,15 @@ export function normalize(owner: string, repo: string, raw: RawPRResponse): Pull
   };
 }
 
+/**
+ * Fetches and normalizes pull request data from GitHub.
+ * @param token GitHub token.
+ * @param owner Repository owner.
+ * @param repo Repository name.
+ * @param number Pull request number.
+ * @returns Normalized pull request data.
+ * @throws {GitHubError} When the API request fails.
+ */
 export async function fetchPullRequest(token: string, owner: string, repo: string, number: number) {
   const raw = await graphql<RawPRResponse>(token, PR_QUERY, { owner, name: repo, number });
   return normalize(owner, repo, raw);
@@ -308,6 +361,14 @@ export async function fetchPullRequest(token: string, owner: string, repo: strin
 /* Mutations                                                           */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Replies to a pull-request review thread.
+ * @param token GitHub token.
+ * @param threadId Review thread ID.
+ * @param body Reply body.
+ * @returns Created comment summary.
+ * @throws {GitHubError} When the mutation fails.
+ */
 export async function replyToReviewThread(token: string, threadId: string, body: string) {
   const data = await graphql<{ addPullRequestReviewThreadReply: { comment: { id: string; url: string } } }>(
     token,
@@ -323,6 +384,14 @@ export async function replyToReviewThread(token: string, threadId: string, body:
   return data.addPullRequestReviewThreadReply.comment;
 }
 
+/**
+ * Adds a top-level comment to a pull request.
+ * @param token GitHub token.
+ * @param subjectId Pull request node ID.
+ * @param body Comment body.
+ * @returns Created comment summary.
+ * @throws {GitHubError} When the mutation fails.
+ */
 export async function addIssueComment(token: string, subjectId: string, body: string) {
   const data = await graphql<{ addComment: { commentEdge: { node: { id: string; url: string } } } }>(
     token,
@@ -338,6 +407,14 @@ export async function addIssueComment(token: string, subjectId: string, body: st
   return data.addComment.commentEdge.node;
 }
 
+/**
+ * Resolves or reopens a review thread.
+ * @param token GitHub token.
+ * @param threadId Review thread ID.
+ * @param resolved Whether the thread should be resolved.
+ * @returns Updated thread state.
+ * @throws {GitHubError} When the mutation fails.
+ */
 export async function setThreadResolved(token: string, threadId: string, resolved: boolean) {
   const mutation = resolved
     ? /* GraphQL */ `mutation Resolve($id: ID!) { resolveReviewThread(input: { threadId: $id }) { thread { id isResolved } } }`
@@ -361,6 +438,20 @@ function toBase64(text: string): string {
   return btoa(binary);
 }
 
+/**
+ * Applies a suggested change directly to the pull request head branch.
+ * @param token GitHub token.
+ * @param owner Repository owner.
+ * @param repo Repository name.
+ * @param branch Head branch name.
+ * @param path File path.
+ * @param startLine Start line number.
+ * @param endLine End line number.
+ * @param suggestion Suggested replacement text.
+ * @param author Suggestion author.
+ * @returns Updated content and commit metadata.
+ * @throws {GitHubError} When the suggestion range is invalid or the API request fails.
+ */
 export async function applyInlineSuggestion(
   token: string,
   owner: string,
@@ -414,6 +505,14 @@ export async function applyInlineSuggestion(
   );
 }
 
+/**
+ * Renders markdown using GitHub's markdown API.
+ * @param token GitHub token, or null for unauthenticated calls.
+ * @param text Markdown text.
+ * @param context Optional repository context.
+ * @returns Rendered HTML string.
+ * @throws {GitHubError} When the API request fails.
+ */
 export async function renderMarkdown(token: string | null, text: string, context?: string) {
   return rest<string>(token, '/markdown', {
     method: 'POST',
@@ -422,6 +521,15 @@ export async function renderMarkdown(token: string | null, text: string, context
   });
 }
 
+/**
+ * Exchanges an OAuth code for a GitHub access token.
+ * @param clientId OAuth app client ID.
+ * @param clientSecret OAuth app client secret.
+ * @param code OAuth authorization code.
+ * @param redirectUri OAuth redirect URI.
+ * @returns GitHub access token.
+ * @throws {GitHubError} When the exchange fails.
+ */
 export async function exchangeOAuthCode(
   clientId: string,
   clientSecret: string,
@@ -440,6 +548,12 @@ export async function exchangeOAuthCode(
   return data.access_token;
 }
 
+/**
+ * Fetches the authenticated user from GitHub.
+ * @param token GitHub token.
+ * @returns Viewer actor.
+ * @throws {GitHubError} When the API request fails.
+ */
 export async function fetchViewer(token: string): Promise<Actor> {
   const data = await graphql<{ viewer: RawActor }>(token, `query { viewer { ${ACTOR} } }`, {});
   return actor(data.viewer);

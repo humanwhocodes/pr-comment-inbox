@@ -5,11 +5,17 @@ import { handleError, readParams } from '../../../../../../lib/pr-route';
 
 export const POST: APIRoute = async (ctx) => {
   const p = readParams(ctx);
-  if (p instanceof Response) return p;
+  if (p instanceof Response) {
+    return p;
+  }
   const input = (await ctx.request.json().catch(() => ({}))) as { threadId?: string; resolved?: boolean };
-  if (!input.threadId || typeof input.resolved !== 'boolean') return error('threadId and resolved are required');
+  if (!input.threadId || typeof input.resolved !== 'boolean') {
+    return error('threadId and resolved are required');
+  }
 
-  if (p.demo) return json({ id: input.threadId, isResolved: input.resolved, demo: true });
+  if (p.demo) {
+    return json({ id: input.threadId, isResolved: input.resolved, demo: true });
+  }
 
   try {
     return json(await setThreadResolved(p.token!, input.threadId, input.resolved));

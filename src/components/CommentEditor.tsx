@@ -64,7 +64,9 @@ export default function CommentEditor(props: Props) {
   }, [initialValue]);
 
   useEffect(() => {
-    if (tab !== 'preview') return;
+    if (tab !== 'preview') {
+      return;
+    }
     if (value.trim() === '') {
       setPreview('');
       return;
@@ -85,22 +87,34 @@ export default function CommentEditor(props: Props) {
         return r.text();
       })
       .then((html) => {
-        if (!cancelled) setPreview(html);
+        if (!cancelled) {
+          setPreview(html);
+        }
       })
       .catch((err: Error) => {
-        if (!cancelled) setPreviewError(err.message);
+        if (!cancelled) {
+          setPreviewError(err.message);
+        }
       })
       .finally(() => {
-        if (!cancelled) setPreviewLoading(false);
+        if (!cancelled) {
+          setPreviewLoading(false);
+        }
       });
     return () => {
       cancelled = true;
     };
   }, [tab, value, owner, repo]);
 
+  /**
+   * Applies markdown formatting around the current selection.
+   * @param wrap Wrap behavior for the selected tool.
+   */
   function apply(wrap: Wrap) {
     const el = textarea.current;
-    if (!el) return;
+    if (!el) {
+      return;
+    }
     const start = el.selectionStart;
     const end = el.selectionEnd;
     const selected = value.slice(start, end);
@@ -131,6 +145,10 @@ export default function CommentEditor(props: Props) {
     });
   }
 
+  /**
+   * Handles keyboard shortcuts in the editor.
+   * @param e Keyboard event from the textarea.
+   */
   function onKeyDown(e: KeyboardEvent) {
     const mod = e.ctrlKey || e.metaKey;
     if (mod && e.key === 'Enter') {
@@ -138,7 +156,9 @@ export default function CommentEditor(props: Props) {
       void submit();
       return;
     }
-    if (!mod) return;
+    if (!mod) {
+      return;
+    }
     const key = e.key.toLowerCase();
     const tool =
       key === 'b' ? 'bold' : key === 'i' ? 'italic' : key === 'e' ? 'code' : key === 'k' ? 'link' : null;
@@ -148,9 +168,15 @@ export default function CommentEditor(props: Props) {
     }
   }
 
+  /**
+   * Submits the current reply content.
+   * @returns Promise that resolves when submit completes.
+   */
   async function submit() {
     const body = value.trim();
-    if (!body || busy) return;
+    if (!body || busy) {
+      return;
+    }
     setError(null);
     try {
       await onSubmit(body, canResolve && resolve);
