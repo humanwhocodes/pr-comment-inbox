@@ -301,6 +301,24 @@ export default function App({ owner, repo, number, demo }: Props) {
     setMobileShowThread(true);
   }
 
+  function markSelectedFromThreadView(read: boolean) {
+    if (!selected) return;
+
+    const currentId = selected.thread.id;
+    const currentIndex = visible.findIndex((item) => item.thread.id === currentId);
+    const nextId = currentIndex >= 0 ? visible[currentIndex + 1]?.thread.id ?? null : null;
+    const prevId = currentIndex > 0 ? visible[currentIndex - 1]?.thread.id ?? null : null;
+
+    markRead([currentId], read);
+
+    if (!read) return;
+    if (nextId) {
+      setSelectedId(nextId);
+      return;
+    }
+    if (prevId) setSelectedId(prevId);
+  }
+
   /* ---------------- render ---------------- */
 
   return (
@@ -368,7 +386,7 @@ export default function App({ owner, repo, number, demo }: Props) {
               onReply={(body, resolve) => reply(selected, body, resolve)}
               onResolve={(resolved) => resolveThread(selected, resolved)}
               onAcceptSuggestion={(commentId, suggestion) => acceptSuggestion(selected, commentId, suggestion)}
-              onMarkRead={(read) => markRead([selected.thread.id], read)}
+              onMarkRead={markSelectedFromThreadView}
               onBack={() => setMobileShowThread(false)}
             />
           ) : (
