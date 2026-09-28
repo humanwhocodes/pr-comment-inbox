@@ -40,12 +40,13 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
     ? thread.reviewState === 'CHANGES_REQUESTED'
     : thread.comments.some((c) => c.kind === 'review' && c.reviewState === 'CHANGES_REQUESTED');
 
-  const initialReply = useMemo(() => {
-    if (thread.kind === 'toplevel' && thread.authorLogin.toLowerCase() !== viewer.toLowerCase()) {
-      return `@${thread.authorLogin} `;
-    }
-    return '';
-  }, [thread.id, viewer]);
+  // Top-level replies only stay in someone else's thread if they @-mention the thread author.
+  const requiredMention =
+    thread.kind === 'toplevel' && thread.authorLogin.toLowerCase() !== viewer.toLowerCase()
+      ? thread.authorLogin
+      : undefined;
+
+  const initialReply = useMemo(() => (requiredMention ? `@${requiredMention} ` : ''), [thread.id, viewer]);
 
   const sourceLines = useMemo(
     () => (thread.kind === 'inline' ? threadSourceLines(thread) : undefined),
@@ -157,6 +158,7 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
                 submitLabel={inline ? 'Reply' : 'Comment'}
                 submitWithResolveLabel="Reply & resolve"
                 canResolve={!item.isResolved && canResolve}
+                requiredMention={requiredMention}
                 busy={busy}
                 onSubmit={onReply}
               />

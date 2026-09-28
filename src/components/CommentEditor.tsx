@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { mentionsLogin } from '../lib/mentions';
 import {
+  AlertIcon,
   BoldIcon,
   CodeIcon,
   HeadingIcon,
@@ -22,6 +24,8 @@ interface Props {
   submitWithResolveLabel: string;
   /** Whether to show the "Resolve conversation" checkbox. */
   canResolve: boolean;
+  /** Login the reply must @-mention to stay in this thread; warns when it's missing. */
+  requiredMention?: string;
   busy: boolean;
   onSubmit: (body: string, resolve: boolean) => Promise<void>;
 }
@@ -42,7 +46,7 @@ const TOOLS: { key: string; title: string; icon: preact.ComponentType<{ size?: n
 ];
 
 export default function CommentEditor(props: Props) {
-  const { owner, repo, initialValue = '', placeholder, submitLabel, submitWithResolveLabel, canResolve, busy, onSubmit } = props;
+  const { owner, repo, initialValue = '', placeholder, submitLabel, submitWithResolveLabel, canResolve, requiredMention, busy, onSubmit } = props;
   const [value, setValue] = useState(initialValue);
   const [tab, setTab] = useState<'write' | 'preview'>('write');
   const [preview, setPreview] = useState<string>('');
@@ -159,6 +163,7 @@ export default function CommentEditor(props: Props) {
   }
 
   const empty = value.trim() === '';
+  const missingMention = !!requiredMention && !empty && !mentionsLogin(value, requiredMention);
 
   return (
     <div class="rounded-lg border border-border bg-canvas">
@@ -224,6 +229,19 @@ export default function CommentEditor(props: Props) {
           </div>
         )}
       </div>
+
+      {missingMention && (
+        <div
+          role="status"
+          class="mx-2 mb-2 flex items-start gap-2 rounded-md border border-attention/40 bg-attention-bg px-3 py-2 text-sm text-attention"
+        >
+          <AlertIcon size={14} class="mt-0.5 shrink-0" />
+          <span>
+            This reply doesn't mention @{requiredMention}, so it won't appear in this thread. Add the @mention back to keep
+            it here.
+          </span>
+        </div>
+      )}
 
       <div class="flex flex-wrap items-center gap-3 border-t border-border px-3 py-2">
         <span class="text-xs text-fg-muted">Markdown is supported. Ctrl+Enter to submit.</span>
