@@ -10,6 +10,8 @@ Built with [Astro](https://astro.build) (server output on
 islands, and [Tailwind CSS v4](https://tailwindcss.com). Light and dark mode follow
 the system and can be toggled.
 
+**See it live:** https://pr-comment-inbox.humanwhocodes.com
+
 ## How threads work
 
 | Thread type | Left pane shows              | Right pane shows                                                                                  | Resolve                                             |
