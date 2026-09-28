@@ -3,3 +3,10 @@
 # Without them, the app still works with a personal access token pasted at sign-in.
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
+
+# Optional: Plausible analytics. Leave both empty to disable (no script is output).
+# Set PLAUSIBLE_DOMAIN for the classic snippet (optionally with PLAUSIBLE_SCRIPT_SRC
+# for a self-hosted or extended script), or set only PLAUSIBLE_SCRIPT_SRC to the
+# site-specific script URL Plausible gives you (https://plausible.io/js/pa-XXXX.js).
+PLAUSIBLE_DOMAIN=
+PLAUSIBLE_SCRIPT_SRC=

@@ -1,10 +1,18 @@
 ---
+import { env } from 'cloudflare:workers';
 import '../styles/global.css';
 
 interface Props {
   title: string;
 }
 const { title } = Astro.props;
+
+// Plausible is opt-in: nothing is rendered unless one of these is set.
+// PLAUSIBLE_DOMAIN uses the classic data-domain snippet (script defaults to plausible.io);
+// PLAUSIBLE_SCRIPT_SRC alone uses the site-specific script (e.g. https://plausible.io/js/pa-XXXX.js).
+const plausibleDomain = env.PLAUSIBLE_DOMAIN?.trim() || undefined;
+const plausibleSrc =
+  env.PLAUSIBLE_SCRIPT_SRC?.trim() || (plausibleDomain ? 'https://plausible.io/js/script.js' : undefined);
 ---
 
 <!doctype html>
@@ -24,6 +32,15 @@ const { title } = Astro.props;
         } catch (e) {}
       })();
     </script>
+    {plausibleSrc && <script is:inline defer data-domain={plausibleDomain} src={plausibleSrc}></script>}
+    {
+      plausibleSrc && !plausibleDomain && (
+        <script is:inline>
+          window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+          plausible.init();
+        </script>
+      )
+    }
   </head>
   <body class="h-full bg-canvas text-fg">
     <slot />

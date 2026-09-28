@@ -57,6 +57,18 @@ npm run deploy
 
 Both secrets are optional; skip them to use token sign-in only.
 
+### Analytics (optional)
+
+[Plausible](https://plausible.io) is added to every page only when configured:
+
+| Variable               | Purpose                                                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `PLAUSIBLE_DOMAIN`     | Site domain for the classic `data-domain` snippet. The script defaults to `https://plausible.io/js/script.js`.                           |
+| `PLAUSIBLE_SCRIPT_SRC` | Script URL. Use alone for Plausible's site-specific script (`https://plausible.io/js/pa-XXXX.js`), or with `PLAUSIBLE_DOMAIN` to override the script (self-hosted or extensions). |
+
+Set them in `.dev.vars` locally, and as `vars` in `wrangler.jsonc` when deploying.
+With neither set, no analytics markup is output.
+
 ## Project layout
 
 ```
