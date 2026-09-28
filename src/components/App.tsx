@@ -179,11 +179,11 @@ export default function App({ owner, repo, number, demo }: Props) {
     });
   }
 
-  async function resolveThread(item: ThreadItem, resolved: boolean) {
+  async function resolveThread(item: ThreadItem, resolved: boolean, manageBusy = true) {
     const { thread } = item;
     // Only review threads have a resolved state; top-level threads use read/unread instead.
     if (thread.kind !== 'inline') return;
-    setBusy(true);
+    if (manageBusy) setBusy(true);
     try {
       const res = await fetch(`${apiBase}/resolve`, {
         method: 'POST',
@@ -201,7 +201,7 @@ export default function App({ owner, repo, number, demo }: Props) {
       // Resolving means you've dealt with it; mark read so any later reply brings it back to the inbox.
       if (result.isResolved) markRead([thread.id], true);
     } finally {
-      setBusy(false);
+      if (manageBusy) setBusy(false);
     }
   }
 
@@ -254,14 +254,13 @@ export default function App({ owner, repo, number, demo }: Props) {
         };
         setData(latest);
       }
+      if (resolve) await resolveThread(item, true, false);
+      if (!demo) latest = (await load()) ?? latest;
+      // A reply from the viewer counts as having read the thread up to and including that reply.
+      markRead([thread.id], true, latest);
     } finally {
       setBusy(false);
     }
-
-    if (resolve) await resolveThread(item, true);
-    if (!demo) latest = (await load()) ?? latest;
-    // A reply from the viewer counts as having read the thread up to and including that reply.
-    markRead([thread.id], true, latest);
   }
 
   function select(id: string) {
