@@ -1,5 +1,5 @@
 import { useMemo } from 'preact/hooks';
-import { type SourceLine, renderSuggestions } from '../lib/suggestions';
+import { extractSuggestionBlocks, type SourceLine, renderSuggestions } from '../lib/suggestions';
 import type { Comment } from '../lib/types';
 import { REACTION_EMOJI, associationLabel, longDate, timeAgo } from '../lib/ui';
 import { LinkIcon } from './Icons';
@@ -12,6 +12,9 @@ interface Props {
   prAuthor: string;
   /** For inline threads: the commented lines, which ```suggestion blocks replace. */
   sourceLines?: SourceLine[];
+  canAcceptSuggestions?: boolean;
+  busy?: boolean;
+  onAcceptSuggestion?: (suggestion: string) => void | Promise<void>;
 }
 
 function reviewBadge(state: Comment['reviewState']) {
@@ -25,8 +28,17 @@ function reviewBadge(state: Comment['reviewState']) {
   }
 }
 
-export default function CommentCard({ comment, viewerLogin, prAuthor, sourceLines }: Props) {
+export default function CommentCard({
+  comment,
+  viewerLogin,
+  prAuthor,
+  sourceLines,
+  canAcceptSuggestions = false,
+  busy = false,
+  onAcceptSuggestion,
+}: Props) {
   const bodyHTML = useMemo(() => renderSuggestions(comment.bodyHTML, sourceLines), [comment.bodyHTML, sourceLines]);
+  const suggestionBlocks = useMemo(() => extractSuggestionBlocks(comment.body), [comment.body]);
   const assoc = associationLabel(comment.authorAssociation);
   const isPrAuthor = comment.author.login.toLowerCase() === prAuthor.toLowerCase();
   const isViewer = comment.author.login.toLowerCase() === viewerLogin.toLowerCase();
@@ -60,6 +72,21 @@ export default function CommentCard({ comment, viewerLogin, prAuthor, sourceLine
         </span>
       </header>
       <div class="markdown-body px-3 py-3" dangerouslySetInnerHTML={{ __html: bodyHTML }} />
+      {canAcceptSuggestions && suggestionBlocks.length > 0 && onAcceptSuggestion && (
+        <div class="flex flex-wrap gap-2 px-3 pb-3">
+          {suggestionBlocks.map((suggestion, index) => (
+            <button
+              key={`${comment.id}:suggestion:${index}`}
+              type="button"
+              class="btn btn-sm"
+              disabled={busy}
+              onClick={() => void onAcceptSuggestion(suggestion)}
+            >
+              {busy ? 'Applying…' : `Apply suggestion${suggestionBlocks.length > 1 ? ` ${index + 1}` : ''}`}
+            </button>
+          ))}
+        </div>
+      )}
       {comment.reactions.length > 0 && (
         <footer class="flex flex-wrap gap-1.5 px-3 pb-3">
           {comment.reactions.map((r) => (

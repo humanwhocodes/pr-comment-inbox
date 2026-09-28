@@ -28,6 +28,9 @@ are posted as new PR comments and are pre-filled with `@author` so they land in 
 same thread. Markdown previews are rendered by GitHub's `/markdown` endpoint, so what
 you see is what GitHub will show.
 
+Inline comments that include fenced `suggestion` blocks also get an **Apply suggestion**
+button, which writes the suggested edit directly to the pull request head branch.
+
 ## Setup
 
 ```bash

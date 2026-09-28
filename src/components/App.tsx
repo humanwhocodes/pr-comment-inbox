@@ -263,6 +263,39 @@ export default function App({ owner, repo, number, demo }: Props) {
     }
   }
 
+  async function acceptSuggestion(item: ThreadItem, commentId: string, suggestion: string) {
+    if (!data || item.thread.kind !== 'inline' || item.thread.line == null) return;
+    const startLine = item.thread.startLine ?? item.thread.line;
+    const endLine = item.thread.line;
+    const headOwner = data.pr.headRepositoryOwner ?? data.owner;
+    const headRepo = data.pr.headRepositoryName ?? data.repo;
+    setBusy(true);
+    setError(null);
+    try {
+      const comment = item.thread.comments.find((c) => c.id === commentId);
+      const res = await fetch(`${apiBase}/suggestion`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          owner: headOwner,
+          repo: headRepo,
+          branch: data.pr.headRefName,
+          path: item.thread.path,
+          startLine,
+          endLine,
+          suggestion,
+          author: comment?.author.login ?? 'reviewer',
+        }),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      await load();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function select(id: string) {
     setSelectedId(id);
     setMobileShowThread(true);
@@ -334,6 +367,7 @@ export default function App({ owner, repo, number, demo }: Props) {
               busy={busy}
               onReply={(body, resolve) => reply(selected, body, resolve)}
               onResolve={(resolved) => resolveThread(selected, resolved)}
+              onAcceptSuggestion={(commentId, suggestion) => acceptSuggestion(selected, commentId, suggestion)}
               onMarkRead={(read) => markRead([selected.thread.id], read)}
               onBack={() => setMobileShowThread(false)}
             />
