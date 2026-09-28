@@ -84,6 +84,7 @@ const PR_QUERY = /* GraphQL */ `
     repository(owner: $owner, name: $name) {
       pullRequest(number: $number) {
         id number title url state isDraft baseRefName headRefName headRefOid
+        headRepository { name owner { login } }
         createdAt changedFiles additions deletions reviewDecision
         author { ${ACTOR} }
         comments(first: 100) {
@@ -134,7 +135,9 @@ interface RawThread {
 }
 interface RawPR {
   id: string; number: number; title: string; url: string; state: PullRequestInfo['state']; isDraft: boolean;
-  baseRefName: string; headRefName: string; headRefOid: string; createdAt: string; changedFiles: number;
+  baseRefName: string; headRefName: string; headRefOid: string;
+  headRepository: { name: string; owner: { login: string } } | null;
+  createdAt: string; changedFiles: number;
   additions: number; deletions: number; reviewDecision: string | null; author: RawActor | null;
   comments: { nodes: RawIssueComment[] };
   reviews: { nodes: RawReview[] };
@@ -266,6 +269,8 @@ export function normalize(owner: string, repo: string, raw: RawPRResponse): Pull
       baseRefName: pr.baseRefName,
       headRefName: pr.headRefName,
       headRefOid: pr.headRefOid,
+      headRepositoryOwner: pr.headRepository?.owner.login ?? null,
+      headRepositoryName: pr.headRepository?.name ?? null,
       author: actor(pr.author),
       reviewDecision: pr.reviewDecision,
       changedFiles: pr.changedFiles,
@@ -328,6 +333,69 @@ export async function setThreadResolved(token: string, threadId: string, resolve
   );
   const key = resolved ? 'resolveReviewThread' : 'unresolveReviewThread';
   return data[key].thread;
+}
+
+function toBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+export async function applyInlineSuggestion(
+  token: string,
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string,
+  startLine: number,
+  endLine: number,
+  suggestion: string,
+  author: string,
+) {
+  const content = await rest<{ content: string; sha: string }>(
+    token,
+    `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/')}?ref=${encodeURIComponent(branch)}`,
+  );
+
+  const decoded = atob((content.content ?? '').replace(/\n/g, ''));
+  const newline = decoded.includes('\r\n') ? '\r\n' : '\n';
+  const lines = decoded.split(/\r?\n/);
+  const start = Math.max(1, Math.min(startLine, endLine));
+  const end = Math.max(start, Math.max(startLine, endLine));
+  const replacement = suggestion.replace(/\n$/, '').split('\n');
+
+  if (end > lines.length) {
+    throw new GitHubError(`Suggestion range ${start}-${end} is out of bounds for ${path}`, 400);
+  }
+
+  const nextLines = [...lines.slice(0, start - 1), ...replacement, ...lines.slice(end)];
+  const updated = nextLines.join(newline);
+  const encoded = toBase64(updated);
+
+  return rest<{ content: { sha: string }; commit: { sha: string; html_url: string } }>(
+    token,
+    `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/')}`,
+    {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        message: `Apply suggestion from @${author}`,
+        content: encoded,
+        sha: content.sha,
+        branch,
+      }),
+    },
+  );
 }
 
 export async function renderMarkdown(token: string | null, text: string, context?: string) {

@@ -24,17 +24,28 @@ interface Props {
   busy: boolean;
   onReply: (body: string, resolve: boolean) => Promise<void>;
   onResolve: (resolved: boolean) => Promise<void>;
+  onAcceptSuggestion: (commentId: string, suggestion: string) => Promise<void>;
   onMarkRead: (read: boolean) => void;
   onBack: () => void;
 }
 
-export default function ThreadView({ item, data, busy, onReply, onResolve, onMarkRead, onBack }: Props) {
+export default function ThreadView({
+  item,
+  data,
+  busy,
+  onReply,
+  onResolve,
+  onAcceptSuggestion,
+  onMarkRead,
+  onBack,
+}: Props) {
   const { thread } = item;
   const root = firstComment(thread);
   const inline = thread.kind === 'inline';
   const viewer = data.viewer.login;
 
   const canResolve = inline && (item.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve);
+  const canAcceptSuggestions = inline && !thread.isOutdated && thread.diffSide === 'RIGHT' && thread.line != null;
 
   const changesRequested = inline
     ? thread.reviewState === 'CHANGES_REQUESTED'
@@ -142,6 +153,9 @@ export default function ThreadView({ item, data, busy, onReply, onResolve, onMar
                 viewerLogin={viewer}
                 prAuthor={data.pr.author.login}
                 sourceLines={sourceLines}
+                canAcceptSuggestions={canAcceptSuggestions}
+                busy={busy}
+                onAcceptSuggestion={(suggestion) => onAcceptSuggestion(c.id, suggestion)}
               />
             ))}
           </div>

@@ -110,3 +110,13 @@ export function renderSuggestions(html: string, source: SourceLine[] = []): stri
 
   return changed ? tpl.innerHTML : html;
 }
+
+export function extractSuggestionBlocks(markdown: string): string[] {
+  const blocks: string[] = [];
+  const re = /```suggestion[^\n]*\n([\s\S]*?)```/gim;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(markdown))) {
+    blocks.push(match[1] ?? '');
+  }
+  return blocks;
+}

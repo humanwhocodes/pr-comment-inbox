@@ -249,6 +249,8 @@ export function demoData(): PullRequestData {
       baseRefName: 'main',
       headRefName: 'feat/stream-ast',
       headRefOid: '4f2a9c1e0b7d3a5c6f8e9d0a1b2c3d4e5f6a7b8c',
+      headRepositoryOwner: DEMO_OWNER,
+      headRepositoryName: DEMO_REPO,
       author: john,
       reviewDecision: 'CHANGES_REQUESTED',
       changedFiles: 14,

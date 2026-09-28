@@ -71,6 +71,8 @@ export interface PullRequestInfo {
   baseRefName: string;
   headRefName: string;
   headRefOid: string;
+  headRepositoryOwner: string | null;
+  headRepositoryName: string | null;
   author: Actor;
   reviewDecision: string | null;
   changedFiles: number;
