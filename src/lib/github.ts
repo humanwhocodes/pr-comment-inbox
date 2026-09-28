@@ -335,6 +335,16 @@ export async function setThreadResolved(token: string, threadId: string, resolve
   return data[key].thread;
 }
 
+function toBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 export async function applyInlineSuggestion(
   token: string,
   owner: string,
@@ -367,7 +377,7 @@ export async function applyInlineSuggestion(
 
   const nextLines = [...lines.slice(0, start - 1), ...replacement, ...lines.slice(end)];
   const updated = nextLines.join(newline);
-  const encoded = btoa(unescape(encodeURIComponent(updated)));
+  const encoded = toBase64(updated);
 
   return rest<{ content: { sha: string }; commit: { sha: string; html_url: string } }>(
     token,
