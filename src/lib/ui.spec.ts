@@ -27,6 +27,18 @@ describe('parseHunk', () => {
       { type: 'add', oldNo: null, newNo: 2, text: 'new' },
     ]);
   });
+
+  it('tracks line numbers for non-1 offsets with mixed operations', () => {
+    const parsed = parseHunk(['@@ -5,3 +8,4 @@', ' shared', '-remove', '+add', ' stay'].join('\n'));
+
+    expect(parsed).toEqual([
+      { type: 'hunk', oldNo: null, newNo: null, text: '@@ -5,3 +8,4 @@' },
+      { type: 'context', oldNo: 5, newNo: 8, text: 'shared' },
+      { type: 'del', oldNo: 6, newNo: null, text: 'remove' },
+      { type: 'add', oldNo: null, newNo: 9, text: 'add' },
+      { type: 'context', oldNo: 7, newNo: 10, text: 'stay' },
+    ]);
+  });
 });
 
 describe('threadLocation', () => {

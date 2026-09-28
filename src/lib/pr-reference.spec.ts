@@ -18,6 +18,14 @@ describe('parsePrReference', () => {
     });
   });
 
+  it('parses short owner/repo/pull/number references', () => {
+    expect(parsePrReference('humanwhocodes/pr-comment-inbox/pull/9')).toEqual({
+      owner: 'humanwhocodes',
+      repo: 'pr-comment-inbox',
+      number: 9,
+    });
+  });
+
   it('returns null for invalid references', () => {
     expect(parsePrReference('not-a-reference')).toBeNull();
   });

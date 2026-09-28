@@ -29,7 +29,7 @@ describe('buildTopLevelThreads integration', () => {
     const alice = threads.find((thread) => thread.authorLogin === 'alice');
 
     expect(alice?.comments.map((comment) => comment.id)).toEqual(['1', '2', '3', '4']);
-    expect(alice?.mentions).toContain('alice');
+    expect(alice?.mentions).toContain('bob');
     expect(alice?.updatedAt).toBe('2026-01-01T00:03:00.000Z');
   });
 });
