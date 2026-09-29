@@ -33,6 +33,16 @@ describe('parsePrReference', () => {
   it('returns null for invalid references', () => {
     expect(parsePrReference('not-a-reference')).toBeNull();
   });
+
+  it('resolves number-only references against the provided repository', () => {
+    const context = { owner: 'humanwhocodes', repo: 'pr-comment-inbox' };
+    expect(parsePrReference('#15', context)).toEqual({ owner: 'humanwhocodes', repo: 'pr-comment-inbox', number: 15 });
+    expect(parsePrReference(' 16 ', context)).toEqual({ owner: 'humanwhocodes', repo: 'pr-comment-inbox', number: 16 });
+  });
+
+  it('returns null for number-only references without a repository', () => {
+    expect(parsePrReference('#15')).toBeNull();
+  });
 });
 
 describe('prPath', () => {

@@ -32,6 +32,8 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20260925.2",
+    "@testing-library/preact": "^3.2.4",
+    "happy-dom": "^20.14.5",
     "typescript": "^6.0.3",
     "vitest": "^3.2.4",
     "wrangler": "^4.141.0"

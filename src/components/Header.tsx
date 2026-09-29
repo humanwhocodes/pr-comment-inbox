@@ -4,6 +4,7 @@
 
 import type { PullRequestData } from '../lib/types';
 import { ExternalLinkIcon, GitMergeIcon, GitPullRequestIcon, InboxIcon } from './Icons';
+import PrSwitcher from './PrSwitcher';
 import ThemeToggle from './ThemeToggle';
 
 interface Props {
@@ -56,6 +57,7 @@ export default function Header({ owner, repo, number, data, demo }: Props) {
           <span class="text-sm font-semibold">PR Comment Inbox</span>
         </a>
         {demo && <span class="badge bg-attention-bg text-attention">Demo</span>}
+        <PrSwitcher current={{ owner, repo, number }} />
         <div class="ml-auto flex items-center gap-2">
           <ThemeToggle />
           {data && (
