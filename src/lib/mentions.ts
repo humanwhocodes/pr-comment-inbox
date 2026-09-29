@@ -1,4 +1,12 @@
-/** Extract @-mentioned logins from a markdown body (GitHub login rules). */
+/**
+ * @fileoverview Parses GitHub-style @mentions from markdown comment bodies.
+ */
+
+/**
+ * Extract @-mentioned logins from a markdown body (GitHub login rules).
+ * @param body Markdown body to inspect.
+ * @returns Lower-cased unique login names.
+ */
 export function extractMentions(body: string): string[] {
   const found = new Set<string>();
   // Strip fenced and inline code so `@foo` in code doesn't count.
@@ -11,6 +19,12 @@ export function extractMentions(body: string): string[] {
   return [...found];
 }
 
+/**
+ * Checks if a markdown body mentions a specific login.
+ * @param body Markdown body to inspect.
+ * @param login Login to search for.
+ * @returns True when the login is mentioned.
+ */
 export function mentionsLogin(body: string, login: string): boolean {
   return extractMentions(body).includes(login.toLowerCase());
 }

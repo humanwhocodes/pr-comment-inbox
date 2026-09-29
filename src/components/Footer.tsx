@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Renders the shared footer used across pages and app shells.
+ */
+
 import { MarkGithubIcon } from './Icons';
 
 interface Props {

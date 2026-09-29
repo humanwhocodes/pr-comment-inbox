@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Provides authentication helpers for token cookies and API responses.
+ */
+
 import type { APIContext, AstroCookies } from 'astro';
 
 export const TOKEN_COOKIE = 'gh_token';

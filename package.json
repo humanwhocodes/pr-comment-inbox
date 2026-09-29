@@ -17,7 +17,8 @@
     "build": "astro build",
     "preview": "wrangler dev",
     "deploy": "astro build && wrangler deploy",
-    "check": "astro check"
+    "check": "astro check",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",
@@ -32,6 +33,7 @@
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20260925.2",
     "typescript": "^6.0.3",
+    "vitest": "^3.2.4",
     "wrangler": "^4.141.0"
   }
 }

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Defines shared application data types for pull requests and threads.
+ */
+
 export interface Actor {
   login: string;
   avatarUrl: string;

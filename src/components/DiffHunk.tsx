@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Displays parsed diff-hunk context for inline review comments.
+ */
+
 import { useState } from 'preact/hooks';
 import type { InlineThread } from '../lib/types';
 import { parseHunk } from '../lib/ui';

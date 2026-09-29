@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Loads request auth state into Astro locals for downstream handlers.
+ */
+
 import { defineMiddleware } from 'astro:middleware';
 import { getToken } from './lib/auth';
 

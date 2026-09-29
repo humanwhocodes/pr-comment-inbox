@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Defines reusable icon components used throughout the UI.
+ */
+
 import type { JSX } from 'preact';
 
 type IconProps = JSX.IntrinsicElements['svg'] & { size?: number };

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Hosts the main pull-request comment inbox application state and orchestration logic.
+ */
+
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import type { Comment, PullRequestData, Thread } from '../lib/types';
 import { excerpt, loadLocal, saveLocal, storageKey, threadLocation, type LocalState } from '../lib/ui';
@@ -42,7 +46,9 @@ export default function App({ owner, repo, number, demo }: Props) {
     setError(null);
     try {
       const res = await fetch(apiBase, { headers: { accept: 'application/json' } });
-      if (!res.ok) throw new Error(await readError(res));
+      if (!res.ok) {
+        throw new Error(await readError(res));
+      }
       const fresh = (await res.json()) as PullRequestData;
       setData(fresh);
       return fresh;
@@ -73,7 +79,9 @@ export default function App({ owner, repo, number, demo }: Props) {
   /* ---------------- derived state ---------------- */
 
   const items: ThreadItem[] = useMemo(() => {
-    if (!data) return [];
+    if (!data) {
+      return [];
+    }
     const viewer = data.viewer.login.toLowerCase();
     return data.threads.map((thread) => {
       const readAt = local.read[thread.id];
@@ -134,14 +142,18 @@ export default function App({ owner, repo, number, demo }: Props) {
     sorted.sort((a, b) => {
       switch (sort) {
         case 'unresolved':
-          if (a.isResolved !== b.isResolved) return a.isResolved ? 1 : -1;
+          if (a.isResolved !== b.isResolved) {
+            return a.isResolved ? 1 : -1;
+          }
           return b.thread.updatedAt.localeCompare(a.thread.updatedAt);
         case 'newest':
           return b.thread.updatedAt.localeCompare(a.thread.updatedAt);
         case 'oldest':
           return a.thread.updatedAt.localeCompare(b.thread.updatedAt);
         case 'file': {
-          if (a.thread.kind !== b.thread.kind) return a.thread.kind === 'inline' ? -1 : 1;
+          if (a.thread.kind !== b.thread.kind) {
+            return a.thread.kind === 'inline' ? -1 : 1;
+          }
           if (a.thread.kind === 'inline' && b.thread.kind === 'inline') {
             return a.thread.path.localeCompare(b.thread.path) || (a.thread.line ?? 0) - (b.thread.line ?? 0);
           }
@@ -156,7 +168,9 @@ export default function App({ owner, repo, number, demo }: Props) {
 
   // Keep a sensible selection: first visible thread when nothing (or something hidden) is selected.
   useEffect(() => {
-    if (visible.length === 0) return;
+    if (visible.length === 0) {
+      return;
+    }
     if (!selectedId || !items.some((i) => i.thread.id === selectedId)) {
       setSelectedId(visible[0].thread.id);
     }
@@ -166,14 +180,21 @@ export default function App({ owner, repo, number, demo }: Props) {
 
   /** `source` lets callers that just refetched pass fresh data instead of this render's `data`. */
   function markRead(ids: string[], read: boolean, source: PullRequestData | null = data) {
-    if (!source) return;
+    if (!source) {
+      return;
+    }
     updateLocal((prev) => {
       const next = { ...prev, read: { ...prev.read } };
       for (const id of ids) {
         const thread = source.threads.find((t) => t.id === id);
-        if (!thread) continue;
-        if (read) next.read[id] = thread.updatedAt;
-        else delete next.read[id];
+        if (!thread) {
+          continue;
+        }
+        if (read) {
+          next.read[id] = thread.updatedAt;
+        } else {
+          delete next.read[id];
+        }
       }
       return next;
     });
@@ -182,15 +203,21 @@ export default function App({ owner, repo, number, demo }: Props) {
   async function resolveThread(item: ThreadItem, resolved: boolean, manageBusy = true) {
     const { thread } = item;
     // Only review threads have a resolved state; top-level threads use read/unread instead.
-    if (thread.kind !== 'inline') return;
-    if (manageBusy) setBusy(true);
+    if (thread.kind !== 'inline') {
+      return;
+    }
+    if (manageBusy) {
+      setBusy(true);
+    }
     try {
       const res = await fetch(`${apiBase}/resolve`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ threadId: thread.id, resolved }),
       });
-      if (!res.ok) throw new Error(await readError(res));
+      if (!res.ok) {
+        throw new Error(await readError(res));
+      }
       const result = (await res.json()) as { isResolved: boolean };
       setData((prev) =>
         prev && {
@@ -199,14 +226,20 @@ export default function App({ owner, repo, number, demo }: Props) {
         },
       );
       // Resolving means you've dealt with it; mark read so any later reply brings it back to the inbox.
-      if (result.isResolved) markRead([thread.id], true);
+      if (result.isResolved) {
+        markRead([thread.id], true);
+      }
     } finally {
-      if (manageBusy) setBusy(false);
+      if (manageBusy) {
+        setBusy(false);
+      }
     }
   }
 
   async function reply(item: ThreadItem, body: string, resolve: boolean) {
-    if (!data) return;
+    if (!data) {
+      return;
+    }
     const { thread } = item;
     let latest: PullRequestData | null = data;
     setBusy(true);
@@ -221,7 +254,9 @@ export default function App({ owner, repo, number, demo }: Props) {
           body,
         }),
       });
-      if (!res.ok) throw new Error(await readError(res));
+      if (!res.ok) {
+        throw new Error(await readError(res));
+      }
       const created = (await res.json()) as { id: string; url: string };
 
       if (demo) {
@@ -254,8 +289,12 @@ export default function App({ owner, repo, number, demo }: Props) {
         };
         setData(latest);
       }
-      if (resolve) await resolveThread(item, true, false);
-      if (!demo) latest = (await load()) ?? latest;
+      if (resolve) {
+        await resolveThread(item, true, false);
+      }
+      if (!demo) {
+        latest = (await load()) ?? latest;
+      }
       // A reply from the viewer counts as having read the thread up to and including that reply.
       markRead([thread.id], true, latest);
     } finally {
@@ -264,7 +303,9 @@ export default function App({ owner, repo, number, demo }: Props) {
   }
 
   async function acceptSuggestion(item: ThreadItem, commentId: string, suggestion: string) {
-    if (!data || item.thread.kind !== 'inline' || item.thread.line == null) return;
+    if (!data || item.thread.kind !== 'inline' || item.thread.line == null) {
+      return;
+    }
     const startLine = item.thread.startLine ?? item.thread.line;
     const endLine = item.thread.line;
     const headOwner = data.pr.headRepositoryOwner ?? data.owner;
@@ -287,7 +328,9 @@ export default function App({ owner, repo, number, demo }: Props) {
           author: comment?.author.login ?? 'reviewer',
         }),
       });
-      if (!res.ok) throw new Error(await readError(res));
+      if (!res.ok) {
+        throw new Error(await readError(res));
+      }
       await load();
     } catch (err) {
       setError((err as Error).message);
@@ -302,7 +345,9 @@ export default function App({ owner, repo, number, demo }: Props) {
   }
 
   function markSelectedFromThreadView(read: boolean) {
-    if (!selected) return;
+    if (!selected) {
+      return;
+    }
 
     const currentId = selected.thread.id;
     const currentIndex = visible.findIndex((item) => item.thread.id === currentId);
@@ -311,12 +356,16 @@ export default function App({ owner, repo, number, demo }: Props) {
 
     markRead([currentId], read);
 
-    if (!read) return;
+    if (!read) {
+      return;
+    }
     if (nextId) {
       setSelectedId(nextId);
       return;
     }
-    if (prevId) setSelectedId(prevId);
+    if (prevId) {
+      setSelectedId(prevId);
+    }
   }
 
   /* ---------------- render ---------------- */
@@ -361,8 +410,11 @@ export default function App({ owner, repo, number, demo }: Props) {
             onToggleChecked={(id) =>
               setChecked((prev) => {
                 const next = new Set(prev);
-                if (next.has(id)) next.delete(id);
-                else next.add(id);
+                if (next.has(id)) {
+                  next.delete(id);
+                } else {
+                  next.add(id);
+                }
                 return next;
               })
             }

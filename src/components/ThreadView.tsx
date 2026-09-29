@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Renders the selected thread detail pane and thread-level actions.
+ */
+
 import { useMemo } from 'preact/hooks';
 import { threadSourceLines } from '../lib/suggestions';
 import type { PullRequestData } from '../lib/types';

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Handles light/dark theme toggling and persistence in the UI.
+ */
+
 import { useEffect, useState } from 'preact/hooks';
 import { MoonIcon, SunIcon } from './Icons';
 
