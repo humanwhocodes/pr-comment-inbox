@@ -58,6 +58,26 @@ describe('PrPicker', () => {
     expect(screen.getByLabelText('Open a pull request').getAttribute('aria-invalid')).toBe('true');
   });
 
+  it('mentions #number in the placeholder and error when a current PR is known', () => {
+    render(<PrPicker current={{ owner: 'humanwhocodes', repo: 'pr-comments', number: 1 }} />);
+    expect((screen.getByLabelText('Open a pull request') as HTMLInputElement).placeholder).toContain('or #123');
+    submit('nope');
+    expect(href).toBe('');
+    expect(screen.getByText('Enter a GitHub pull request URL, owner/repo#number, or #number.')).toBeTruthy();
+  });
+
+  it('omits #number from the placeholder without a current PR', () => {
+    render(<PrPicker />);
+    expect((screen.getByLabelText('Open a pull request') as HTMLInputElement).placeholder).not.toContain('#123,');
+  });
+
+  it('marks the input for autofocus only when requested', () => {
+    const { rerender } = render(<PrPicker />);
+    expect((screen.getByLabelText('Open a pull request') as HTMLInputElement).autofocus).toBe(false);
+    rerender(<PrPicker autoFocus />);
+    expect((screen.getByLabelText('Open a pull request') as HTMLInputElement).autofocus).toBe(true);
+  });
+
   it('clears the error when the input changes', () => {
     render(<PrPicker />);
     submit('nope');

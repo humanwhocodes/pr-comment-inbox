@@ -5,3 +5,6 @@ dist/
 .dev.vars
 .env
 .DS_Store
+
+# test coverage
+coverage/

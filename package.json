@@ -18,7 +18,8 @@
     "preview": "wrangler dev",
     "deploy": "astro build && wrangler deploy",
     "check": "astro check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",
@@ -33,6 +34,7 @@
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20260925.2",
     "@testing-library/preact": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.7",
     "happy-dom": "^20.14.5",
     "typescript": "^6.0.3",
     "vitest": "^3.2.4",
