@@ -14,7 +14,8 @@ export interface Reaction {
   viewerHasReacted: boolean;
 }
 
-export type CommentKind = 'issue' | 'review' | 'reviewComment';
+/** `description` is the pull request body itself, shown as the start of the PR author's thread. */
+export type CommentKind = 'issue' | 'review' | 'reviewComment' | 'description';
 
 export interface Comment {
   id: string;

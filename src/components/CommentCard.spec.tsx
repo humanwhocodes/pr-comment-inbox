@@ -36,6 +36,12 @@ describe('CommentCard', () => {
     expect(container.querySelector('article')?.id).toBe('c1');
   });
 
+  it('describes the pull request description as opening the pull request', () => {
+    renderCard({ kind: 'description', author: makeActor('author') });
+    expect(screen.getByText(/^opened this pull request/)).toBeTruthy();
+    expect(screen.getByText('Author')).toBeTruthy();
+  });
+
   it('shows the author association label when known', () => {
     renderCard({ authorAssociation: 'MEMBER' });
     expect(screen.getByText('Member')).toBeTruthy();

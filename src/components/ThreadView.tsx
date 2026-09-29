@@ -68,7 +68,11 @@ export default function ThreadView({
     [thread],
   );
 
-  const jumpUrl = inline ? root.url : `${data.pr.url}#issuecomment-${root.url.split('-').pop() ?? ''}`;
+  const jumpUrl = inline
+    ? root.url
+    : root.kind === 'description'
+      ? data.pr.url
+      : `${data.pr.url}#issuecomment-${root.url.split('-').pop() ?? ''}`;
 
   return (
     <div class="flex h-full min-h-0 flex-col">

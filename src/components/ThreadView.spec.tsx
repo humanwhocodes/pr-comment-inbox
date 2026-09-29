@@ -195,6 +195,26 @@ describe('ThreadView', () => {
       expect(screen.queryByText('Changes requested', { selector: 'header .flex-wrap > .badge' })).toBeNull();
     });
 
+    it('shows the pull request description as the start of the author thread', () => {
+      const thread = makeTopLevelThread({
+        authorLogin: 'author',
+        comments: [
+          makeComment({
+            id: 'description:PR_1',
+            kind: 'description',
+            author: makeActor('author'),
+            bodyHTML: '<p>Full PR description</p>',
+            url: 'https://github.com/o/r/pull/1',
+          }),
+        ],
+      });
+      render(<ThreadView {...makeProps(makeItem(thread))} />);
+      expect(screen.getByText('Pull request description')).toBeTruthy();
+      expect(screen.getByText('Full PR description')).toBeTruthy();
+      expect(screen.getByText(/^opened this pull request/)).toBeTruthy();
+      expect(screen.getByTitle('Open this thread on GitHub').getAttribute('href')).toBe('https://github.com/o/r/pull/1');
+    });
+
     it('handles a comment URL without an id segment', () => {
       const thread = makeTopLevelThread({ comments: [makeComment({ url: 'noid' })] });
       render(<ThreadView {...makeProps(makeItem(thread))} />);

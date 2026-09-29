@@ -237,7 +237,21 @@ export function demoData(): PullRequestData {
     ),
   ];
 
-  const threads = [...inline, ...buildTopLevelThreads(topLevel)];
+  const description = comment(
+    john,
+    minutesAgo(60 * 48),
+    'Replaces the recursive AST visitor with a streaming compiler that processes source in slab-allocated chunks.\n\n## Changes\n\n- New `AstStream` that consumes `Uint8Array` chunks\n- Multibyte-aware `TokenStream::next_glyph`\n- Memory limits for the benchmark container\n\n## Benchmarks\n\n| Run | Before | After | Δ |\n| --- | --- | --- | --- |\n| Cold | 41.2k req/s | 47.0k req/s | +14% |\n| Warm | 52.8k req/s | 57.6k req/s | +9% |\n\nFixes #1391',
+    '<p>Replaces the recursive AST visitor with a streaming compiler that processes source in slab-allocated chunks.</p><h2>Changes</h2><ul><li>New <code>AstStream</code> that consumes <code>Uint8Array</code> chunks</li><li>Multibyte-aware <code>TokenStream::next_glyph</code></li><li>Memory limits for the benchmark container</li></ul><h2>Benchmarks</h2><table><thead><tr><th>Run</th><th>Before</th><th>After</th><th>Δ</th></tr></thead><tbody><tr><td>Cold</td><td>41.2k req/s</td><td>47.0k req/s</td><td>+14%</td></tr><tr><td>Warm</td><td>52.8k req/s</td><td>57.6k req/s</td><td>+9%</td></tr></tbody></table><p>Fixes #1391</p>',
+    {
+      id: 'description:demo-pr',
+      kind: 'description',
+      authorAssociation: 'OWNER',
+      url: 'https://github.com/octocat/syntax-engine/pull/1428',
+      reactions: [{ content: 'HOORAY', count: 4, viewerHasReacted: false }],
+    },
+  );
+
+  const threads = [...inline, ...buildTopLevelThreads(topLevel, description)];
 
   return {
     owner: DEMO_OWNER,

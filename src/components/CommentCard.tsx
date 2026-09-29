@@ -77,7 +77,8 @@ export default function CommentCard({
           <span class="rounded-full border border-border px-1.5 py-px text-[11px] text-fg-muted">{assoc}</span>
         )}
         <span class="text-fg-muted" title={longDate(comment.createdAt)}>
-          {review ? review.action : 'commented'} {timeAgo(comment.createdAt)}
+          {review ? review.action : comment.kind === 'description' ? 'opened this pull request' : 'commented'}{' '}
+          {timeAgo(comment.createdAt)}
         </span>
         <span class="ml-auto flex items-center gap-2">
           {review && reviewBadge(review)}

@@ -114,7 +114,8 @@ const PR_QUERY = /* GraphQL */ `
         id number title url state isDraft baseRefName headRefName headRefOid
         headRepository { name owner { login } }
         createdAt changedFiles additions deletions reviewDecision
-        author { ${ACTOR} }
+        author { ${ACTOR} } authorAssociation body bodyHTML
+        ${REACTIONS}
         comments(first: 100) {
           nodes {
             id author { ${ACTOR} } authorAssociation body bodyHTML createdAt url
@@ -167,6 +168,7 @@ interface RawPR {
   headRepository: { name: string; owner: { login: string } } | null;
   createdAt: string; changedFiles: number;
   additions: number; deletions: number; reviewDecision: string | null; author: RawActor | null;
+  authorAssociation: string; body: string; bodyHTML: string; reactionGroups: RawReactionGroup[];
   comments: { nodes: RawIssueComment[] };
   reviews: { nodes: RawReview[] };
   reviewThreads: { nodes: RawThread[] };
@@ -231,13 +233,34 @@ function leadingMention(body: string): string | null {
 }
 
 /**
+ * Converts a pull request body into a description comment.
+ * @param pr Raw pull request.
+ * @returns Description comment, or null when the description is empty.
+ */
+function descriptionComment(pr: RawPR): Comment | null {
+  if (!pr.body || pr.body.trim().length === 0) {
+    return null;
+  }
+  return {
+    ...issueComment({ ...pr, id: `description:${pr.id}` }),
+    kind: 'description',
+  };
+}
+
+/**
  * Group top-level comments (issue comments + review bodies) into per-author threads:
  * every comment written by the author plus every comment that @-mentions them.
  * If an author's top-level comment starts by @-mentioning someone who also has
  * a top-level comment, don't include that comment in the author's own thread.
+ * The pull request description, when given, opens the PR author's thread and
+ * appears only there (mentions inside it don't pull it into other threads).
+ * @param comments Top-level comments.
+ * @param description Pull request description comment, if any.
+ * @returns Per-author top-level threads.
  */
-export function buildTopLevelThreads(comments: Comment[]): TopLevelThread[] {
-  const sorted = [...comments].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+export function buildTopLevelThreads(comments: Comment[], description?: Comment | null): TopLevelThread[] {
+  const all = description ? [description, ...comments] : comments;
+  const sorted = [...all].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const commenters = new Set(sorted.map((c) => c.author.login.toLowerCase()));
   const threads: TopLevelThread[] = [];
   const seen = new Set<string>();
@@ -250,6 +273,9 @@ export function buildTopLevelThreads(comments: Comment[]): TopLevelThread[] {
     seen.add(key);
     const members = sorted.filter(
       (x) => {
+        if (x.kind === 'description') {
+          return x.author.login.toLowerCase() === key;
+        }
         if (x.author.login.toLowerCase() === key) {
           const mention = leadingMention(x.body);
           if (mention && mention !== key && commenters.has(mention)) {
@@ -317,7 +343,7 @@ export function normalize(owner: string, repo: string, raw: RawPRResponse): Pull
       };
     });
 
-  const threads: Thread[] = [...inline, ...buildTopLevelThreads(topLevel)];
+  const threads: Thread[] = [...inline, ...buildTopLevelThreads(topLevel, descriptionComment(pr))];
 
   return {
     owner,

@@ -72,6 +72,52 @@ describe('rest', () => {
 });
 
 describe('buildTopLevelThreads', () => {
+  it('starts the PR author thread with the description', () => {
+    const description = {
+      ...makeComment('d', 'alice', '2026-01-01T00:00:00.000Z', 'This PR does things. cc @bob'),
+      kind: 'description' as const,
+    };
+    const threads = buildTopLevelThreads(
+      [
+        makeComment('1', 'bob', '2026-01-01T00:01:00.000Z', 'Looks fine.'),
+        makeComment('2', 'alice', '2026-01-01T00:02:00.000Z', 'Thanks!'),
+      ],
+      description,
+    );
+
+    const alice = threads.find((thread) => thread.authorLogin === 'alice');
+    const bob = threads.find((thread) => thread.authorLogin === 'bob');
+
+    expect(alice?.comments.map((comment) => comment.id)).toEqual(['d', '2']);
+    expect(bob?.comments.map((comment) => comment.id)).toEqual(['1']);
+  });
+
+  it('creates a thread for the description when the author has no comments', () => {
+    const description = {
+      ...makeComment('d', 'alice', '2026-01-01T00:00:00.000Z', 'Description only'),
+      kind: 'description' as const,
+    };
+    const threads = buildTopLevelThreads([], description);
+
+    expect(threads).toHaveLength(1);
+    expect(threads[0].id).toBe('toplevel:alice');
+    expect(threads[0].comments.map((comment) => comment.id)).toEqual(['d']);
+  });
+
+  it('moves replies that lead with an @mention of the PR author into the author thread', () => {
+    const description = {
+      ...makeComment('d', 'alice', '2026-01-01T00:00:00.000Z', 'Description only'),
+      kind: 'description' as const,
+    };
+    const threads = buildTopLevelThreads(
+      [makeComment('1', 'bob', '2026-01-01T00:01:00.000Z', '@alice what does this fix?')],
+      description,
+    );
+
+    expect(threads.map((thread) => thread.authorLogin)).toEqual(['alice']);
+    expect(threads[0].comments.map((comment) => comment.id)).toEqual(['d', '1']);
+  });
+
   it('excludes leading @mention comments from the authors own thread', () => {
     const threads = buildTopLevelThreads([
       makeComment('1', 'alice', '2026-01-01T00:00:00.000Z', 'Initial review note.'),

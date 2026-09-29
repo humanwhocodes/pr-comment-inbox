@@ -48,10 +48,16 @@ describe('parseHunk', () => {
 describe('threadLocation', () => {
   it('formats inline and top-level locations', () => {
     const inlineThread = { kind: 'inline', path: 'src/app.ts', line: 12 } as Thread;
-    const topLevelThread = { kind: 'toplevel' } as Thread;
+    const topLevelThread = { kind: 'toplevel', comments: [] } as unknown as Thread;
 
     expect(threadLocation(inlineThread)).toBe('src/app.ts:12');
     expect(threadLocation(topLevelThread)).toBe('Top-level comment');
+  });
+
+  it('labels threads that start with the pull request description', () => {
+    const thread = { kind: 'toplevel', comments: [{ kind: 'description' }] } as Thread;
+
+    expect(threadLocation(thread)).toBe('Pull request description');
   });
 });
 

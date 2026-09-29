@@ -162,6 +162,15 @@ export function isInline(thread: Thread): thread is InlineThread {
 }
 
 /**
+ * Checks whether a thread starts with the pull request description.
+ * @param thread Comment thread.
+ * @returns True when the thread's first comment is the PR description.
+ */
+export function startsWithDescription(thread: Thread): boolean {
+  return thread.comments[0]?.kind === 'description';
+}
+
+/**
  * Formats a thread location label.
  * @param thread Comment thread.
  * @returns Human-readable location.
@@ -169,6 +178,9 @@ export function isInline(thread: Thread): thread is InlineThread {
 export function threadLocation(thread: Thread): string {
   if (thread.kind === 'inline') {
     return thread.line != null ? `${thread.path}:${thread.line}` : thread.path;
+  }
+  if (startsWithDescription(thread)) {
+    return 'Pull request description';
   }
   return 'Top-level comment';
 }

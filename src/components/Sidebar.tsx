@@ -3,7 +3,7 @@
  */
 
 import type { Thread } from '../lib/types';
-import { excerpt, firstComment, threadLocation, timeAgo } from '../lib/ui';
+import { excerpt, firstComment, startsWithDescription, threadLocation, timeAgo } from '../lib/ui';
 import {
   AlertIcon,
   CheckCircleIcon,
@@ -11,6 +11,7 @@ import {
   DoubleCheckIcon,
   EyeIcon,
   FileCodeIcon,
+  GitPullRequestIcon,
   MentionIcon,
   RefreshIcon,
   ReplyIcon,
@@ -262,7 +263,13 @@ export default function Sidebar(props: Props) {
                       </span>
                     </div>
                     <div class="mt-0.5 flex items-center gap-1 text-xs text-fg-muted">
-                      {thread.kind === 'inline' ? <FileCodeIcon size={12} /> : <CommentIcon size={12} />}
+                      {thread.kind === 'inline' ? (
+                        <FileCodeIcon size={12} />
+                      ) : startsWithDescription(thread) ? (
+                        <GitPullRequestIcon size={12} />
+                      ) : (
+                        <CommentIcon size={12} />
+                      )}
                       <span class="truncate font-mono">{threadLocation(thread)}</span>
                     </div>
                     <p class={`line-clamp-2 mt-1.5 text-[13px] leading-snug ${item.isResolved ? 'text-fg-muted' : 'text-fg'}`}>
