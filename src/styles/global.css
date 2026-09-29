@@ -99,7 +99,7 @@
     @apply border-accent/40 bg-accent/10 text-accent;
   }
   .badge {
-    @apply inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium leading-4;
+    @apply inline-flex items-center gap-1 rounded-md border border-current/40 px-1.5 py-0.5 text-[11px] font-medium leading-4;
   }
 }
 

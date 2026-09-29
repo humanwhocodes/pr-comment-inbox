@@ -87,11 +87,11 @@ export default function ThreadView({
           </div>
           <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
             {changesRequested && !item.isResolved && (
-              <span class="badge bg-danger-bg text-danger">
+              <span class="badge bg-attention-bg text-attention">
                 <AlertIcon size={12} /> Changes requested
               </span>
             )}
-            {item.isOutdated && <span class="badge border border-border">Outdated</span>}
+            {item.isOutdated && <span class="badge border-border">Outdated</span>}
             {inline ? (
               <span>{item.isResolved ? 'Resolved conversation' : 'Unresolved conversation'}</span>
             ) : (

@@ -83,18 +83,18 @@ function ThreadBadges({ item }: { item: ThreadItem }) {
   return (
     <div class="mt-2 flex flex-wrap items-center gap-1.5">
       {item.isResolved && (
-        <span class="badge border border-success/40 bg-success-bg text-success">
+        <span class="badge bg-success-bg text-success">
           <CheckCircleIcon size={12} /> Resolved
         </span>
       )}
       {item.mentionsViewer && (
-        <span class="badge border border-attention/40 bg-attention-bg text-attention">
+        <span class="badge bg-attention-bg text-attention">
           <MentionIcon size={12} /> Mention
         </span>
       )}
-      {item.isOutdated && <span class="badge border border-border text-fg-muted">Outdated</span>}
+      {item.isOutdated && <span class="badge border-border text-fg-muted">Outdated</span>}
       {!item.isResolved && changesRequested && (
-        <span class="badge bg-danger-bg text-danger">
+        <span class="badge bg-attention-bg text-attention">
           <AlertIcon size={12} /> Changes requested
         </span>
       )}

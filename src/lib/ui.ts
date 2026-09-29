@@ -110,6 +110,39 @@ export function associationLabel(assoc: string): string | null {
   }
 }
 
+export type ReviewTone = 'approved' | 'changes' | 'neutral';
+
+export interface ReviewSummary {
+  /** Verb phrase shown after the author's name, e.g. "approved these changes". */
+  action: string;
+  /** Short badge label, e.g. "Approved". */
+  label: string;
+  tone: ReviewTone;
+}
+
+/**
+ * Describes how a review comment should be presented, based on its review state.
+ * @param comment Comment to describe.
+ * @returns Review summary, or null when the comment is not a review.
+ */
+export function reviewSummary(comment: Pick<Comment, 'kind' | 'reviewState'>): ReviewSummary | null {
+  if (comment.kind !== 'review') {
+    return null;
+  }
+  switch (comment.reviewState) {
+    case 'APPROVED':
+      return { action: 'approved these changes', label: 'Approved', tone: 'approved' };
+    case 'CHANGES_REQUESTED':
+      return { action: 'requested changes', label: 'Changes requested', tone: 'changes' };
+    case 'DISMISSED':
+      return { action: 'reviewed (dismissed)', label: 'Dismissed review', tone: 'neutral' };
+    case 'PENDING':
+      return { action: 'started a review', label: 'Pending review', tone: 'neutral' };
+    default:
+      return { action: 'reviewed', label: 'Review comment', tone: 'neutral' };
+  }
+}
+
 /**
  * Returns the first comment in a thread.
  * @param thread Comment thread.

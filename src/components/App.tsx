@@ -429,7 +429,7 @@ export default function App({ owner, repo, number, demo }: Props) {
         </div>
 
         <main class={`min-h-0 min-w-0 ${mobileShowThread ? 'block' : 'hidden lg:block'}`}>
-          {data && selected ? (
+          {data && selected && visible.length > 0 ? (
             <ThreadView
               key={selected.thread.id}
               item={selected}
@@ -452,7 +452,11 @@ export default function App({ owner, repo, number, demo }: Props) {
                 <>
                   <CommentIcon size={32} class="opacity-40" />
                   <p class="text-sm">
-                    {items.length === 0 ? 'No comment threads on this pull request yet.' : 'Select a thread to read it.'}
+                    {items.length === 0
+                      ? 'No comment threads on this pull request yet.'
+                      : visible.length === 0
+                        ? '👋 When you select a comment on the left the thread will be displayed here.'
+                        : 'Select a thread to read it.'}
                   </p>
                 </>
               )}

@@ -32,7 +32,7 @@ function StateBadge({ data }: { data: PullRequestData }) {
   }
   if (pr.isDraft) {
     return (
-      <span class="badge border border-border px-2 py-1 text-xs text-fg-muted">
+      <span class="badge border-border px-2 py-1 text-xs text-fg-muted">
         <GitPullRequestIcon size={12} /> Draft
       </span>
     );

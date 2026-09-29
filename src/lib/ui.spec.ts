@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { excerpt, parseHunk, storageKey, threadLocation, timeAgo } from './ui';
+import { excerpt, parseHunk, reviewSummary, storageKey, threadLocation, timeAgo } from './ui';
 import type { Thread } from './types';
 
 describe('timeAgo', () => {
@@ -58,5 +58,24 @@ describe('threadLocation', () => {
 describe('storageKey', () => {
   it('normalizes owner and repo casing', () => {
     expect(storageKey('HumanWhoCodes', 'PR-Comment-Inbox', 5)).toBe('pr-comments:humanwhocodes/pr-comment-inbox#5');
+  });
+});
+
+describe('reviewSummary', () => {
+  it('returns null for non-review comments', () => {
+    expect(reviewSummary({ kind: 'issue' })).toBeNull();
+  });
+
+  it('describes each review state', () => {
+    expect(reviewSummary({ kind: 'review', reviewState: 'APPROVED' })).toMatchObject({ label: 'Approved', tone: 'approved' });
+    expect(reviewSummary({ kind: 'review', reviewState: 'CHANGES_REQUESTED' })).toMatchObject({
+      action: 'requested changes',
+      tone: 'changes',
+    });
+    expect(reviewSummary({ kind: 'review', reviewState: 'COMMENTED' })).toMatchObject({
+      action: 'reviewed',
+      label: 'Review comment',
+      tone: 'neutral',
+    });
   });
 });

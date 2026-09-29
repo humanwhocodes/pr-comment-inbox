@@ -5,8 +5,8 @@
 import { useMemo } from 'preact/hooks';
 import { extractSuggestionBlocks, type SourceLine, renderSuggestions } from '../lib/suggestions';
 import type { Comment } from '../lib/types';
-import { REACTION_EMOJI, associationLabel, longDate, timeAgo } from '../lib/ui';
-import { LinkIcon } from './Icons';
+import { REACTION_EMOJI, type ReviewSummary, associationLabel, longDate, reviewSummary, timeAgo } from '../lib/ui';
+import { AlertIcon, CheckCircleIcon, CommentIcon, LinkIcon } from './Icons';
 
 interface Props {
   comment: Comment;
@@ -21,15 +21,30 @@ interface Props {
   onAcceptSuggestion?: (suggestion: string) => void | Promise<void>;
 }
 
-function reviewBadge(state: Comment['reviewState']) {
-  switch (state) {
-    case 'CHANGES_REQUESTED':
-      return <span class="badge bg-danger-bg text-danger">Changes requested</span>;
-    case 'APPROVED':
-      return <span class="badge bg-success-bg text-success">Approved</span>;
-    default:
-      return null;
-  }
+const REVIEW_BADGE_CLASS: Record<ReviewSummary['tone'], string> = {
+  approved: 'bg-success-bg text-success',
+  changes: 'bg-attention-bg text-attention',
+  neutral: 'border-border text-fg-muted',
+};
+
+const REVIEW_CARD_BORDER: Record<ReviewSummary['tone'], string> = {
+  approved: 'border-success/50',
+  changes: 'border-attention/50',
+  neutral: 'border-border',
+};
+
+/**
+ * Renders the badge that identifies a review and its outcome.
+ * @param review Review summary for the comment.
+ * @returns Badge element.
+ */
+function reviewBadge(review: ReviewSummary) {
+  const Icon = review.tone === 'approved' ? CheckCircleIcon : review.tone === 'changes' ? AlertIcon : CommentIcon;
+  return (
+    <span class={`badge ${REVIEW_BADGE_CLASS[review.tone]}`}>
+      <Icon size={12} /> {review.label}
+    </span>
+  );
 }
 
 export default function CommentCard({
@@ -46,9 +61,13 @@ export default function CommentCard({
   const assoc = associationLabel(comment.authorAssociation);
   const isPrAuthor = comment.author.login.toLowerCase() === prAuthor.toLowerCase();
   const isViewer = comment.author.login.toLowerCase() === viewerLogin.toLowerCase();
+  const review = reviewSummary(comment);
 
   return (
-    <article class="rounded-lg border border-border bg-canvas" id={comment.id}>
+    <article
+      class={`rounded-lg border bg-canvas ${review ? REVIEW_CARD_BORDER[review.tone] : 'border-border'}`}
+      id={comment.id}
+    >
       <header class="flex flex-wrap items-center gap-2 rounded-t-lg border-b border-border bg-canvas-subtle px-3 py-2 text-sm">
         <a href={comment.author.url} target="_blank" rel="noreferrer" class="flex items-center gap-2">
           <img src={comment.author.avatarUrl} alt="" class="h-6 w-6 rounded-full" loading="lazy" />
@@ -58,10 +77,10 @@ export default function CommentCard({
           <span class="rounded-full border border-border px-1.5 py-px text-[11px] text-fg-muted">{assoc}</span>
         )}
         <span class="text-fg-muted" title={longDate(comment.createdAt)}>
-          commented {timeAgo(comment.createdAt)}
+          {review ? review.action : 'commented'} {timeAgo(comment.createdAt)}
         </span>
         <span class="ml-auto flex items-center gap-2">
-          {comment.kind === 'review' && reviewBadge(comment.reviewState)}
+          {review && reviewBadge(review)}
           {isPrAuthor && <span class="badge bg-accent/10 text-accent">Author</span>}
           {isViewer && !isPrAuthor && <span class="badge bg-done-bg text-done">You</span>}
           <a
