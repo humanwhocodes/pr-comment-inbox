@@ -218,8 +218,7 @@ describe('Sidebar', () => {
       const li = renderItem(makeItem());
       expect(within(li).getByText('src/index.ts:2')).toBeTruthy();
       expect(within(li).getByText('Looks good').className).toContain('text-fg');
-      expect(within(li).getByTitle('Unread')).toBeTruthy();
-      expect(within(li).queryByTitle('Read')).toBeNull();
+      expect(within(li).getByTitle('Unread').className).toContain('bg-accent');
       expect(within(li).queryByText(/repl(y|ies)/)).toBeNull();
     });
 
@@ -229,10 +228,10 @@ describe('Sidebar', () => {
       expect(within(li).getByText('commenter')).toBeTruthy();
     });
 
-    it('shows the read indicator and hides the unread dot', () => {
+    it('hides the unread dot for read threads', () => {
       const li = renderItem(makeItem(undefined, { isRead: true, needsAttention: false }));
-      expect(within(li).getByTitle('Read')).toBeTruthy();
       expect(within(li).queryByTitle('Unread')).toBeNull();
+      expect(within(li).queryByTitle('Read')).toBeNull();
     });
 
     it('shows a placeholder for comments without text', () => {

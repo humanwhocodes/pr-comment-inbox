@@ -255,10 +255,7 @@ export default function Sidebar(props: Props) {
                     <div class="flex items-baseline gap-1.5">
                       <span class="truncate text-sm font-semibold">{root.author.login}</span>
                       <span class="ml-auto inline-flex shrink-0 items-center gap-1.5 self-center text-xs text-fg-muted">
-                        {item.needsAttention && (
-                          <span class="h-2 w-2 rounded-full bg-danger" title="Unread" />
-                        )}
-                        {item.isRead && <span class="h-2 w-2 rounded-full bg-success/60" title="Read" />}
+                        {item.needsAttention && <span class="h-2 w-2 rounded-full bg-accent" title="Unread" />}
                         {timeAgo(thread.updatedAt)}
                       </span>
                     </div>
