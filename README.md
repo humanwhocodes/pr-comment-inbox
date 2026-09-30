@@ -12,6 +12,9 @@ the system and can be toggled.
 
 **See it live:** https://pr-comment-inbox.humanwhocodes.com
 
+Read more about the project:
+https://humanwhocodes.com/blog/2026/09/introducing-pr-comment-inbox/
+
 ## How threads work
 
 | Thread type | Left pane shows              | Right pane shows                                                                                  | Resolve                                             |
